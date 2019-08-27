@@ -1,5 +1,5 @@
 # ze-fluentd-plugin
-Zebrium's command line interface for uploading log events from files or streams, viewing log events and the definitions of event types in the database.
+Zebrium's fluentd output plugin sends the logs you collect with Fluentd to Zebrium for automated Anomaly detection.
 ## Features
 ##### upload
 Upload log event data to your Zebrium instance from a file or stream (stdin) with appropriate meta data.
@@ -9,12 +9,9 @@ Show the event-type (eType) definition for structured events in the database.
 Show events from the database by: meta-data, eType, time range, or first occurrence in CSV, JSON, pretty-print or raw format.
 ## Getting Started
 ##### Prerequisites
-* Perl
-* cURL
-* API token from Zebrium
-* URL to your instance of Zebrium
+* Fluentd
 ##### Installing
-* `git clone https://github.com/zebrium/ze-cli.git`
+* Install [Fluentd](https://www.fluentd.org/download).
 * move `bin/ze` to appropriate bin directory in your PATH
 ## Configuration
 No configuration is required. All options can be specified as command line arguments. However, see **Setup** section below for information on configuring your .zerc file.
