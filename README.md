@@ -1,12 +1,6 @@
 # ze-fluentd-plugin
 Zebrium's fluentd output plugin sends the logs you collect with Fluentd to Zebrium for automated Anomaly detection.
 ## Features
-##### upload
-Upload log event data to your Zebrium instance from a file or stream (stdin) with appropriate meta data.
-##### def
-Show the event-type (eType) definition for structured events in the database.
-##### cat
-Show events from the database by: meta-data, eType, time range, or first occurrence in CSV, JSON, pretty-print or raw format.
 ## Getting Started
 ##### Prerequisites
 * Fluentd
@@ -78,21 +72,11 @@ On CentOS 6, Fluentd agent can be started or stopped with the command:
 sudo /etc/init.d/td-agent <start | stop>
 ```
 ##### Run Fluentd Agent as root User
-By default td-agent is run as td-agent user which doesn't have permission to read any files. Depending on what log files to be read, you may see "permission denied" error message in /var/log/td-agent/td-agent.log. To fix that issue, you can either change file permission, or run td-agent as root.
+By default, td-agent is run as td-agent user which does not have permission to read any files. Depending on what log files to be read, you may see "permission denied" error message in /var/log/td-agent/td-agent.log. To fix that issue, you can either change file permission, or run td-agent as root.
 
 * On CentOS 6, edit /etc/init.d/td-agent file, change "TD_AGENT_USER" and "TD_AGENT_GROUP" to "root", and restart td-agent.
 
 * On CentOS7, edit /usr/lib/systemd/system/td-agent.service, change "User" and "Group" configs to "root", and restart td-agent.
 ## Testing your installation
-Use `ze up` to ingest log events into your Zebrium instance.
-```
-ze up --file=/var/log/messages --node=server01 --log=varlogmsgs
-```
-Use `ze cat` to show events already ingested into your Zebrium instance.
-```
-ze cat --lim=20 --fmt=pp
-```
 ## Contributors
-* Larry Lancaster (Zebrium)
-* Dara Hazeghi (Zebrium)
-* Rod Bagg (Zebrium)
+* Brady Zuo (Zebrium)
