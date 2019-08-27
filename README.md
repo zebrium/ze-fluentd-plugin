@@ -11,23 +11,17 @@ Show events from the database by: meta-data, eType, time range, or first occurre
 ##### Prerequisites
 * Fluentd
 ##### Installing
-1. Install [Fluentd](https://www.fluentd.org/download).
+1. Install [Fluentd](https://www.fluentd.org/download) and any dependencies.
 
-2. Download/copy Zebrium output plugin package fluent-plugin-zebrium_output-1.0.0.gem
-   1. git clone https://github.com/zebrium/ze-fluentd-plugin.git
-   2. copy pkgs/fluent-plugin-zebrium_output-1.0.0.gem to a new directory
-3. Run the following command in the same directory where fluent-plugin-zebrium_output-1.0.0.gem was copied/saved
-   1. Run the following command in the same directory where  fluent-plugin-zebrium_output-1.0.0.gem is saved
+2. Download/copy Zebrium output plugin package fluent-plugin-zebrium_output-1.0.0.gem.
+   1. `git clone https://github.com/zebrium/ze-fluentd-plugin.git`
+3. Run the following command in the same directory where fluent-plugin-zebrium_output-1.0.0.gem was downloaded.
+   1. `td-agent-gem install fluent-plugin-zebrium_output`
 ## Configuration
-No configuration is required. All options can be specified as command line arguments. However, see **Setup** section below for information on configuring your .zerc file.
-##### Setup
-For convenience, your API token and your Zebrium instance URL can be specified in your $HOME/.zerc file.
+The configuration file for td-agent is at `/etc/td-agent/td-agent.conf`.
 
-Example .zerc file:
-```
-auth=YOUR_API_TOKEN
-url=https://YOUR_ZE_API_INSTANCE_NAME.zebrium.com
-```
+Below is an example configuration file with configuration parameters for the Zebrium output plugin. 
+##### Setup
 ##### Environment Variables
 None
 ## Usage
