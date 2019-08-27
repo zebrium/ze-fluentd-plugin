@@ -19,6 +19,14 @@ Show events from the database by: meta-data, eType, time range, or first occurre
    1. `td-agent-gem install fluent-plugin-zebrium_output`
 ## Configuration
 The configuration file for td-agent is at `/etc/td-agent/td-agent.conf`.
+The following tags `td-agent.conf must` be configured for your instance:
+```
+ze_log_collector_url "https://YOUR_ZE_API_INSTANCE_NAME.zebrium.com"
+ze_log_collector_token "YOUR_API_TOKEN"
+ze_tag_branch "branch1"
+ze_tag_build "build123"
+ze_tag_node "canary-node"
+```
 
 Below is an example `/etc/td-agent/td-agent.conf` file with configuration parameters for the Zebrium output plugin. 
 ##### Setup
