@@ -21,11 +21,21 @@ Show events from the database by: meta-data, eType, time range, or first occurre
 The configuration file for td-agent is at `/etc/td-agent/td-agent.conf`.
 The following tags must be configured for your instance:
 ```
-ze_log_collector_url   YYY        ABC
-ze_log_collector_token XX         ABC
-ze_tag_branch          AAAd       ABC
-ze_tag_build           BBBDD      ABC
-ze_tag_node            CCCddDd    ABC
+| ze_log_collector_url   | Zebrium log host URL | Provided by Zebrium once your account has been created    |
+|                        |                      |                                                           |
+| ze_log_collector_token | Authentication token | Provided by Zebrium once your account has been created    |
+|                        |                      |                                                           |
+| ze_tag_branch          | User application     | You should choose a word that uniquely identifies the     |
+|                        | software branch      | branch. If you do not have the concept of branch, you     |
+|                        |                      | can use "-" or any other label.                           |
+|                        |                      |                                                           |
+| ze_tag_build           | User application     | You should use a word that uniquely identifies the build. |
+|                        | software build ID    | If you do not have the concept of build, you can use "-"  |
+|                        |                      | or any other label.                                       |
+|                        |                      |                                                           |
+| ze_tag_node            | Node where collector | This parameter is optional. By default it is read from    |
+|                        | is running           | /etc/hostname or from the hostname command output.        |
+|                        |                      | The value should be unique.                               |
 ```
 
 Below is an example `/etc/td-agent/td-agent.conf` file with configuration parameters for the Zebrium output plugin. 
