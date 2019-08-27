@@ -15,13 +15,37 @@ Show events from the database by: meta-data, eType, time range, or first occurre
 
 2. Download/copy Zebrium output plugin package fluent-plugin-zebrium_output-1.0.0.gem.
    1. `git clone https://github.com/zebrium/ze-fluentd-plugin.git`
-3. Run the following command in the same directory where fluent-plugin-zebrium_output-1.0.0.gem was downloaded.
+3. Run the following command in the same directory where pkgs/fluent-plugin-zebrium_output-1.0.0.gem was downloaded.
    1. `td-agent-gem install fluent-plugin-zebrium_output`
 ## Configuration
 The configuration file for td-agent is at `/etc/td-agent/td-agent.conf`.
 
-Below is an example configuration file with configuration parameters for the Zebrium output plugin. 
+Below is an example `/etc/td-agent/td-agent.conf` file with configuration parameters for the Zebrium output plugin. 
 ##### Setup
+```
+<source>
+ @type tail
+ path "/var/log/messages,/var/log/secure"
+ format none
+ path_key tailed_path
+ tag node.logs
+</source>
+<match **>
+ @type zebrium
+ ze_log_collector_url "https://zapi02.zebrium.com"
+ ze_log_collector_token "12345678910"
+ ze_tag_branch "branch1"
+ ze_tag_build "build123"
+ ze_tag_node "canary-node"
+ @log_level "info"
+ <buffer tag>
+   @type file
+   path /var/log/td-agent/buffer/out_zebrium.*.buffer
+   flush_mode "interval"
+   flush_interval "60s"
+ </buffer>
+</match>
+```
 ##### Environment Variables
 None
 ## Usage
