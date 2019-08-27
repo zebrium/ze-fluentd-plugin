@@ -11,10 +11,13 @@ Show events from the database by: meta-data, eType, time range, or first occurre
 ##### Prerequisites
 * Fluentd
 ##### Installing
-* Install [Fluentd](https://www.fluentd.org/download).
-  * aaa
-  * bbb
-* move `bin/ze` to appropriate bin directory in your PATH
+1. Install [Fluentd](https://www.fluentd.org/download).
+
+2. Download/copy Zebrium output plugin package fluent-plugin-zebrium_output-1.0.0.gem
+   1. git clone https://github.com/zebrium/ze-fluentd-plugin.git
+   2. copy pkgs/fluent-plugin-zebrium_output-1.0.0.gem to a new directory
+3. Run the following command in the same directory where fluent-plugin-zebrium_output-1.0.0.gem was copied/saved
+   1. Run the following command in the same directory where  fluent-plugin-zebrium_output-1.0.0.gem is saved
 ## Configuration
 No configuration is required. All options can be specified as command line arguments. However, see **Setup** section below for information on configuring your .zerc file.
 ##### Setup
