@@ -67,10 +67,22 @@ Below is an example `/etc/td-agent/td-agent.conf` file with configuration parame
 ##### Environment Variables
 None
 ## Usage
-Use `ze help` for a complete list of command operations and options.
+##### Start/stop Fluentd on CentOS 7/Ubuntu 16.04/18.04
+Fluentd agent can be started or stopped with the command:
 ```
-ze help
+sudo systemctl <start | stop> td-agent
 ```
+##### Start/stop Fluentd on CentOS 6
+On CentOS 6, Fluentd agent can be started or stopped with the command:
+```
+sudo /etc/init.d/td-agent <start | stop>
+```
+##### Run Fluentd Agent as root User
+By default td-agent is run as td-agent user which doesn't have permission to read any files. Depending on what log files to be read, you may see "permission denied" error message in /var/log/td-agent/td-agent.log. To fix that issue, you can either change file permission, or run td-agent as root.
+
+* On CentOS 6, edit /etc/init.d/td-agent file, change "TD_AGENT_USER" and "TD_AGENT_GROUP" to "root", and restart td-agent.
+
+* On CentOS7, edit /usr/lib/systemd/system/td-agent.service, change "User" and "Group" configs to "root", and restart td-agent.
 ## Testing your installation
 Use `ze up` to ingest log events into your Zebrium instance.
 ```
