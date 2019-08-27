@@ -12,6 +12,8 @@ Show events from the database by: meta-data, eType, time range, or first occurre
 * Fluentd
 ##### Installing
 * Install [Fluentd](https://www.fluentd.org/download).
+  1. aaa
+  2. bbb
 * move `bin/ze` to appropriate bin directory in your PATH
 ## Configuration
 No configuration is required. All options can be specified as command line arguments. However, see **Setup** section below for information on configuring your .zerc file.
