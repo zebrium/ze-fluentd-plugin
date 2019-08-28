@@ -7,12 +7,37 @@ Zebrium's fluentd output plugin sends the logs you collect with Fluentd to Zebri
 ##### Prerequisites
 * Fluentd
 ##### Installing
-1. Install [Fluentd](https://www.fluentd.org/download) and any dependencies.
-
+1. Install [Fluentd](https://www.fluentd.org/download) and any dependencies. See details below
 2. Download/copy Zebrium output plugin package fluent-plugin-zebrium_output-1.0.0.gem.
    1. `git clone https://github.com/zebrium/ze-fluentd-plugin.git`
 3. Run the following command in the same directory where pkgs/fluent-plugin-zebrium_output-1.0.0.gem was downloaded.
    1. `td-agent-gem install fluent-plugin-zebrium_output`
+
+##### Installing on CentOS 6/Centos 7 (Process should be similar for other flavors of Linux)
+1. Log in as root
+2. Install packages required by Fluentd and plugins:
+   1. `yum -y install gcc ruby-devel rubygems compass`
+3. Install Fluentd agent:
+   1. `curl -L https://toolbelt.treasuredata.com/sh/install-redhat-td-agent3.sh | sh`
+4. Download/copy Zebrium output plugin package fluent-plugin-zebrium_output-1.0.0.gem.
+   1. `git clone https://github.com/zebrium/ze-fluentd-plugin.git`
+5. Run the following command in the same directory where pkgs/fluent-plugin-zebrium_output-1.0.0.gem was downloaded.
+   1. `td-agent-gem install fluent-plugin-zebrium_output`
+
+##### Installing on Ubuntu 16.04/18.04
+1. Log in as root
+2. Install packages required by Fluentd and plugins:
+   1. `apt-get install build-essential ruby-dev`
+3. Install Fluentd agent:
+   1. For Ubuntu 16.04:
+      1. `curl -L https://toolbelt.treasuredata.com/sh/install-ubuntu-xenial-td-agent3.sh | sh`
+   2. For Ubuntu 18.04:
+      1. `curl -L https://toolbelt.treasuredata.com/sh/install-ubuntu-bionic-td-agent3.sh | sh`
+4. Download/copy Zebrium output plugin package fluent-plugin-zebrium_output-1.0.0.gem.
+   1. `git clone https://github.com/zebrium/ze-fluentd-plugin.git`
+5. Run the following command in the same directory where pkgs/fluent-plugin-zebrium_output-1.0.0.gem was downloaded.
+   1. `td-agent-gem install fluent-plugin-zebrium_output`
+
 ## Configuration
 The configuration file for td-agent is at `/etc/td-agent/td-agent.conf`.
 The following tags must be configured for your instance:
