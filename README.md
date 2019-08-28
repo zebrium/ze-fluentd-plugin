@@ -1,6 +1,8 @@
 # ze-fluentd-plugin
 Zebrium's fluentd output plugin sends the logs you collect with Fluentd to Zebrium for automated Anomaly detection.
+<!--
 ## Features
+-->
 ## Getting Started
 ##### Prerequisites
 * Fluentd
@@ -14,6 +16,18 @@ Zebrium's fluentd output plugin sends the logs you collect with Fluentd to Zebri
 ## Configuration
 The configuration file for td-agent is at `/etc/td-agent/td-agent.conf`.
 The following tags must be configured for your instance:
+<table>
+  <tr>
+    <th>Tag</th>
+    <th>Description</th>
+    <th>Note</th>
+  </tr>
+  <tr>
+    <td>ze_log_collector_url</td>
+    <td>Zebrium log host URL</td>
+    <td>Provided by Zebrium once your account has been created </td>
+  </tr>
+</table>
 ```
 | ze_log_collector_url   | Zebrium log host URL | Provided by Zebrium once your account has been created    |
 |                        |                      |                                                           |
