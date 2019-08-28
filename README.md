@@ -25,7 +25,27 @@ The following tags must be configured for your instance:
   <tr>
     <td>ze_log_collector_url</td>
     <td>Zebrium log host URL</td>
-    <td>Provided by Zebrium once your account has been created </td>
+    <td>Provided by Zebrium once your account has been created.</td>
+  </tr>
+  <tr>
+    <td>ze_log_collector_token</td>
+    <td>Authentication token</td>
+    <td>Provided by Zebrium once your account has been created.</td>
+  </tr>
+  <tr>
+    <td>ze_tag_branch</td>
+    <td>User application software branch</td>
+    <td>You should choose a word that uniquely identifies the branch. If you do not have the concept of branch, you can use &quot;-&quot; or any other label.</td>
+  </tr>
+  <tr>
+    <td>ze_tag_build</td>
+    <td>User application software build ID</td>
+    <td>You should use a word that uniquely identifies the build. If you do not have the concept of build, you can use &quot;-&quot; or any other label.</td>
+  </tr>
+  <tr>
+    <td>ze_tag_node</td>
+    <td>Node where collector is running</td>
+    <td>This parameter is optional. By default it is read from /etc/hostname or from the hostname command output. The value should be unique.</td>
   </tr>
 </table>
 ```
