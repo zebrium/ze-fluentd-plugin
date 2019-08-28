@@ -62,7 +62,7 @@ Below is an example `/etc/td-agent/td-agent.conf` file with configuration parame
 <match **>
  @type zebrium
  ze_log_collector_url "https://YOUR_ZE_API_INSTANCE_NAME.zebrium.com"
- ze_log_collector_token "YOUR_ZE_API_TOKEN"
+ ze_log_collector_token "YOUR_ZE_API_AUTH_TOKEN"
  ze_tag_branch "branch1"
  ze_tag_build "build123"
  ze_tag_node "canary-node"
