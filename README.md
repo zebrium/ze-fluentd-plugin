@@ -120,5 +120,6 @@ By default, td-agent is run as td-agent user which does not have permission to r
 
 * On CentOS7, edit /usr/lib/systemd/system/td-agent.service, change "User" and "Group" configs to "root", and restart td-agent.
 ## Testing your installation
+Once the collector has been deployed in your environment, your logs and anomaly detection will be available in the Zebrium UI.
 ## Contributors
 * Brady Zuo (Zebrium)
