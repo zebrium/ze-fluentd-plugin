@@ -16,7 +16,7 @@ Zebrium's fluentd output plugin sends the logs you collect with Fluentd to Zebri
 ##### Installing on CentOS 6/Centos 7 (Process should be similar for other flavors of Linux)
 1. Log in as root
 2. Install packages required by Fluentd and plugins:
-   1. `yum -y install gcc ruby-devel rubygems compass`
+   1. `yum -y install gcc ruby-devel rubygems`
 3. Install Fluentd agent:
    1. `curl -L https://toolbelt.treasuredata.com/sh/install-redhat-td-agent3.sh | sh`
 4. Download/copy Zebrium output plugin package fluent-plugin-zebrium_output-1.0.0.gem.
