@@ -11,7 +11,7 @@ Zebrium's fluentd output plugin sends the logs you collect with Fluentd to Zebri
 2. Download/copy Zebrium output plugin package fluent-plugin-zebrium_output-1.0.0.gem.
    1. `git clone https://github.com/zebrium/ze-fluentd-plugin.git`
 3. Run the following command in the same directory where pkgs/fluent-plugin-zebrium_output-1.0.0.gem was downloaded.
-   1. `td-agent-gem install fluent-plugin-zebrium_output`
+   1. `td-agent-gem install fluent-plugin-systemd fluent-plugin-zebrium_output`
 
 ##### Installing on CentOS 6/Centos 7 (Process should be similar for other flavors of Linux)
 1. Log in as root
@@ -84,6 +84,18 @@ Below is an example `/etc/td-agent/td-agent.conf` file with configuration parame
  path_key tailed_path
  tag node.logs
 </source>
+
+<source>
+  @type systemd
+  path "/var/log/journal"
+  <storage>
+    @type local
+    path /var/log/td-agent/fluentd-journald-cursor.json
+  </storage>
+  tag journal
+  read_from_head true
+</source>
+
 <match **>
  @type zebrium
  ze_log_collector_url "https://YOUR_ZE_API_INSTANCE_NAME.zebrium.com"
