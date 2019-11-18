@@ -43,6 +43,14 @@ function create_config() {
   read_from_head true
 </source>
 
+<match systemd.service.docker>
+  @type rewrite_tag_filter
+  <rule>
+    key CONTAINER_ID_FULL
+    pattern /.+/
+    tag containers.\$1
+  </rule>
+</match>
 EOF
 )"
     fi
