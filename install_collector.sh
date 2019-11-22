@@ -43,6 +43,15 @@ function create_config() {
   read_from_head true
 </source>
 
+<match journal>
+  @type rewrite_tag_filter
+  <rule>
+    key _SYSTEMD_UNIT
+    pattern /^(.+)\.service$/
+    tag systemd.service.$1
+  </rule>
+</match>
+
 <match systemd.service.docker>
   @type rewrite_tag_filter
   <rule>
@@ -170,7 +179,7 @@ $SUDO_CMD td-agent-gem uninstall fluent-plugin-zebrium_output
 
 cd $TEMP_DIR
 echo -e "\033[34m\n* Downloading fluent-plugin-zebrium_output\n\033[0m\n"
-$DL_CMD https://github.com/zebrium/ze-fluentd-plugin/raw/master/pkgs/fluent-plugin-zebrium_output-1.0.0.gem
+$DL_CMD https://github.com/zebrium/ze-fluentd-plugin/raw/master/pkgs/fluent-plugin-zebrium_output-1.15.0.gem
 echo -e "\033[34m\n* Installing fluent-plugin-zebrium_output\n\033[0m\n"
 $SUDO_CMD td-agent-gem install fluent-plugin-systemd fluent-plugin-zebrium_output
 
