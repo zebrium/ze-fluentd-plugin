@@ -160,13 +160,21 @@ if [ $OS = "RedHat" ]; then
     fi
 elif [ $OS = "Debian" ]; then
     DEFAULTS_DIR=/etc/default
+    IS_UBUNTU=`uname -a  | grep -i Ubuntu | wc -l`
     CODE_NAME=`lsb_release -c | awk '{ print $2 }'`
+    FLAVOR_STR=""
+    if [ $IS_UBUNTU -ge 1 ]; then
+        FLAVOR_STR="ubuntu"
+    else
+        FLAVOR_STR="debian"
+    fi
+
     echo -e "\033[34m\n* Installing package dependies\n\033[0m\n"
     $SUDO_CMD apt-get update || printf "\033[31m'apt-get update' failed.\033[0m\n"
     $SUDO_CMD apt-get install -y build-essential ruby-dev
 
     echo -e "\033[34m\n* Installing log collector dependencies\n\033[0m"
-    $DL_SH_CMD https://toolbelt.treasuredata.com/sh/install-ubuntu-${CODE_NAME}-td-agent3.sh | sh
+    $DL_SH_CMD https://toolbelt.treasuredata.com/sh/install-${FLAVOR_STR}-${CODE_NAME}-td-agent3.sh | sh
 else
     echo -e "\033[31mYour OS or distribution are not supported by this install script.\033[0m\n"
     exit;
