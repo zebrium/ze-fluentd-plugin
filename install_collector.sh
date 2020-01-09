@@ -27,7 +27,9 @@ and we'll do our very best to help you solve your problem.\n\033[0m\n"
 }
 
 function create_config() {
-    local CONF_FILE=$TEMP_DIR/td-agent.conf
+    local MAIN_CONF_FILE=$TEMP_DIR/td-agent.conf
+    local USER_CONF_FILE=$TEMP_DIR/user.conf
+    local CONTAINERS_CONF_FILE=$TEMP_DIR/containers.conf
 
     if which systemd > /dev/null 2>&1; then
         local SYSTEMD_CONF="$(cat << EOF
@@ -65,16 +67,19 @@ EOF
     fi
 
     DEFAULT_LOG_PATHS="/var/log/*.log,/var/log/messages,/var/log/syslog,/var/log/secure"
-    ZE_LOG_PATHS="${ZE_LOG_PATHS:-${DEFAULT_LOG_PATHS}}"
-    cat << EOF > $CONF_FILE
+    cat << EOF > $MAIN_CONF_FILE
 <source>
   @type tail
-  path "$ZE_LOG_PATHS"
+  path "$DEFAULT_LOG_PATHS"
   format none
   path_key tailed_path
-  tag node.logs
+  tag node.logs.*
   read_from_head true
 </source>
+
+include conf.d/user.conf
+include conf.d/containers.conf
+
 $SYSTEMD_CONF
 
 <match **>
@@ -91,7 +96,36 @@ $SYSTEMD_CONF
   </buffer>
 </match>
 EOF
-    $SUDO_CMD cp -f $CONF_FILE /etc/td-agent/td-agent.conf
+    # "path" can not be empty in Fluentd config, so we add a dummy file
+    # if user does not provide log file path
+    ZE_LOG_PATHS="${ZE_LOG_PATHS:-/tmp/__dummy__.log"
+    cat << EOF > $USER_CONF_FILE
+<source>
+  @type tail
+  path "$ZE_LOG_PATHS"
+  path_key tailed_path
+  <parse>
+    @type none
+  </parse>
+  tag node.logs.*
+</source>
+EOF
+
+    cat << EOF > $CONTAINERS_CONF_FILE
+<source>
+  @type tail
+  path "/var/lib/zebrium/container_logs/*.log"
+  path_key tailed_path
+  tag containers.*
+  format json
+  time_format %Y-%m-%dT%H:%M:%S.%NZ
+</source>
+EOF
+
+    $SUDO_CMD cp -f $MAIN_CONF_FILE /etc/td-agent/td-agent.conf
+    $SUDO_CMD mkdir -p /etc/td-agent/conf.d
+    $SUDO_CMD cp -f $USER_CONF_FILE /etc/td-agent/conf.d
+    $SUDO_CMD cp -f $CONTAINERS_CONF_FILE /etc/td-agent/conf.d
 }
 
 if [ $(command -v curl) ]; then
@@ -189,6 +223,8 @@ fi
 
 echo -e "\033[34m\n* Installing fluent-plugin-systemd\n\033[0m"
 $SUDO_CMD td-agent-gem install fluent-plugin-systemd
+echo -e "\033[34m\n* Installing docker-api\n\033[0m"
+$SUDO_CMD td-agent-gem install docker-api
 echo -e "\033[34m\n* Uninstalling fluent-plugin-zebrium_output\n\033[0m\n"
 $SUDO_CMD td-agent-gem uninstall fluent-plugin-zebrium_output
 
@@ -197,6 +233,11 @@ echo -e "\033[34m\n* Downloading fluent-plugin-zebrium_output\n\033[0m\n"
 $DL_CMD https://github.com/zebrium/ze-fluentd-plugin/raw/master/pkgs/fluent-plugin-zebrium_output-1.18.0.gem
 echo -e "\033[34m\n* Installing fluent-plugin-zebrium_output\n\033[0m\n"
 $SUDO_CMD td-agent-gem install fluent-plugin-systemd fluent-plugin-zebrium_output
+
+echo -e "\033[34m\n* Downloading zebrium-fluentd.tgz\n\033[0m\n"
+$DL_CMD https://github.com/zebrium/ze-fluentd-plugin/raw/master/pkgs/zebrium-fluentd-1.18.0.tgz
+echo -e "\033[34m\n* Installing zebrium-fluentd\n\033[0m\n"
+$SUDO_CMD tar -C /opt xf zebrium-fluentd-1.18.0.tgz
 
 TD_DEFAULT_FILE=$DEFAULTS_DIR/td-agent
 if [ -e $TD_DEFAULT_FILE ]; then
@@ -214,7 +255,12 @@ fi
 if [ -d /etc/systemd/system ]; then
     $SUDO_CMD mkdir -p /etc/systemd/system/td-agent.service.d
     $SUDO_CMD sh -c '/bin/echo -e "[Service]\nUser=root\nGroup=root\n" > /etc/systemd/system/td-agent.service.d/override.conf'
+    $SUDO_CMD cp -f /opt/zebrium/etc/zebrium-container-mon.service /etc/systemd/system/
+    pushd /etc/systemd/system/ > /dev/null
+    systemctl enable zebrium-container-mon.service
+    popd > /dev/null
     $SUDO_CMD systemctl daemon-reload
+    $SUDO_CMD systemctl start zebrium-container-mon.service
 fi
 
 # Set the configuration
@@ -257,8 +303,27 @@ if which systemctl > /dev/null 2>&1 && systemctl -a | grep -q td-agent; then
         systemctl status td-agent > /dev/null && break
         sleep 5
     done
-fi
-printf "\033[32m
+    printf "\033[32m
+
+Zebrium Log Collector is running.
+
+If you ever want to stop the Log Collector, run:
+
+    sudo systemctl stop td-agent
+
+And to run it again run:
+
+    sudo systemctl start td-agent
+
+\033[0m"
+
+else
+    while : ; do
+        echo -e "\033[34m* Waiting for log collector to come up ...\n\033[0m\n"
+        /etc/init.d/td-agent status && break
+        sleep 5
+    done
+    printf "\033[32m
 
 Zebrium Log Collector is running.
 
@@ -271,3 +336,4 @@ And to run it again run:
     sudo /etc/init.d/td-agent start
 
 \033[0m"
+fi
