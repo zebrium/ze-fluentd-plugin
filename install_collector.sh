@@ -161,7 +161,14 @@ if [ $OS = "RedHat" ]; then
 elif [ $OS = "Debian" ]; then
     DEFAULTS_DIR=/etc/default
     IS_UBUNTU=`uname -a  | grep -i Ubuntu | wc -l`
-    CODE_NAME=`lsb_release -c | awk '{ print $2 }'`
+    if which lsb_release > /dev/null 2>&1; then
+        CODE_NAME=`lsb_release -c | awk '{ print $2 }'`
+    else
+        RELEASE_VERS=`head -1 /etc/issue | awk '{ print $3 }'`
+        if [ "$RELEASE_VERS" == "8" ]; then
+            CODE_NAME="jessie"
+        fi
+    fi
     FLAVOR_STR=""
     if [ $IS_UBUNTU -ge 1 ]; then
         FLAVOR_STR="ubuntu"
