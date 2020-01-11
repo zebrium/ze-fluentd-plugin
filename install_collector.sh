@@ -76,10 +76,11 @@ function create_config() {
 EOF
 
     DEFAULT_LOG_PATHS="/var/log/*.log,/var/log/messages,/var/log/syslog,/var/log/secure"
+    ZE_LOG_PATHS="${ZE_LOG_PATHS:-$DEFAULT_LOG_PATHS}"
     cat << EOF > $MAIN_CONF_FILE
 <source>
   @type tail
-  path "$DEFAULT_LOG_PATHS"
+  path "$ZE_LOG_PATHS"
   format none
   path_key tailed_path
   tag node.logs.*
@@ -106,11 +107,11 @@ $SYSTEMD_INCLUDE
 EOF
     # "path" can not be empty in Fluentd config, so we add a dummy file
     # if user does not provide log file path
-    ZE_LOG_PATHS="${ZE_LOG_PATHS:-/tmp/__dummy__.log}"
+    ZE_USER_LOG_PATHS="${ZE_USER_LOG_PATHS:-/tmp/__dummy__.log}"
     cat << EOF > $USER_CONF_FILE
 <source>
   @type tail
-  path "$ZE_LOG_PATHS"
+  path "$ZE_USER_LOG_PATHS"
   path_key tailed_path
   <parse>
     @type none
