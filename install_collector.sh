@@ -26,14 +26,25 @@ and we'll do our very best to help you solve your problem.\n\033[0m\n"
     cleanup
 }
 
+function update_td_agent_service_file() {
+    if ! grep -q 'ExecStartPre=' /lib/systemd/system/td-agent.service; then
+        printf "\033[34m* Add ExecStartPre script for td-agent service\n\033[0m\n"
+        $SUDO_CMD sed -i '/^ExecStart=.*/i ExecStartPre=/opt/zebrium/bin/update_fluentd_cfg.rb' /lib/systemd/system/td-agent.service
+    fi
+}
+
 function create_config() {
     local MAIN_CONF_FILE=$TEMP_DIR/td-agent.conf
     local USER_CONF_FILE=$TEMP_DIR/user.conf
+    local SYSTEMD_CONF_FILE=$TEMP_DIR/systemd.conf
     local CONTAINERS_CONF_FILE=$TEMP_DIR/containers.conf
 
-    if which systemd > /dev/null 2>&1; then
-        local SYSTEMD_CONF="$(cat << EOF
-
+    local SYSTEMD_INCLUDE=""
+    if which systemctl > /dev/null 2>&1; then
+        echo -e "\033[34m\n* Systemd detected, creating systemd config\n\033[0m"
+        SYSTEMD_INCLUDE="@include conf.d/systemd.conf"
+    fi
+    cat << EOF > $SYSTEMD_CONF_FILE
 <source>
   @type systemd
   path "$JOURNAL_DIR"
@@ -63,8 +74,6 @@ function create_config() {
   </rule>
 </match>
 EOF
-)"
-    fi
 
     DEFAULT_LOG_PATHS="/var/log/*.log,/var/log/messages,/var/log/syslog,/var/log/secure"
     cat << EOF > $MAIN_CONF_FILE
@@ -77,10 +86,9 @@ EOF
   read_from_head true
 </source>
 
-include conf.d/user.conf
-include conf.d/containers.conf
-
-$SYSTEMD_CONF
+@include conf.d/user.conf
+@include conf.d/containers.conf
+$SYSTEMD_INCLUDE
 
 <match **>
   @type zebrium
@@ -98,7 +106,7 @@ $SYSTEMD_CONF
 EOF
     # "path" can not be empty in Fluentd config, so we add a dummy file
     # if user does not provide log file path
-    ZE_LOG_PATHS="${ZE_LOG_PATHS:-/tmp/__dummy__.log"
+    ZE_LOG_PATHS="${ZE_LOG_PATHS:-/tmp/__dummy__.log}"
     cat << EOF > $USER_CONF_FILE
 <source>
   @type tail
@@ -126,6 +134,9 @@ EOF
     $SUDO_CMD mkdir -p /etc/td-agent/conf.d
     $SUDO_CMD cp -f $USER_CONF_FILE /etc/td-agent/conf.d
     $SUDO_CMD cp -f $CONTAINERS_CONF_FILE /etc/td-agent/conf.d
+    if [ -n "$SYSTEMD_INCLUDE" ]; then
+        $SUDO_CMD cp -f $SYSTEMD_CONF_FILE /etc/td-agent/conf.d
+    fi
 }
 
 if [ $(command -v curl) ]; then
@@ -135,6 +146,8 @@ else
     DL_CMD="wget --quiet"
     DL_SH_CMD="wget -qO-"
 fi
+
+OVERWRITE_CONFIG=${OVERWRITE_CONFIG:-0}
 
 TEMP_DIR=/tmp/zlog-collector-install.$$
 mkdir -p $TEMP_DIR
@@ -234,19 +247,15 @@ $DL_CMD https://github.com/zebrium/ze-fluentd-plugin/raw/master/pkgs/fluent-plug
 echo -e "\033[34m\n* Installing fluent-plugin-zebrium_output\n\033[0m\n"
 $SUDO_CMD td-agent-gem install fluent-plugin-systemd fluent-plugin-zebrium_output
 
-echo -e "\033[34m\n* Downloading zebrium-fluentd.tgz\n\033[0m\n"
+echo -e "\033[34m\n* Downloading zebrium-fluentd package\n\033[0m\n"
 $DL_CMD https://github.com/zebrium/ze-fluentd-plugin/raw/master/pkgs/zebrium-fluentd-1.18.0.tgz
 echo -e "\033[34m\n* Installing zebrium-fluentd\n\033[0m\n"
-$SUDO_CMD tar -C /opt xf zebrium-fluentd-1.18.0.tgz
+$SUDO_CMD tar -C /opt -xf zebrium-fluentd-1.18.0.tgz
 
 TD_DEFAULT_FILE=$DEFAULTS_DIR/td-agent
-if [ -e $TD_DEFAULT_FILE ]; then
-    if ! grep -q user $TD_DEFAULT_FILE; then
-        TD_AGENT_OPTIONS=`grep -oP 'TD_AGENT_OPTIONS=(\K.*)' $TD_DEFAULT_FILE | sed 's/"//g'`
-        $SUDO_CMD sh -c "echo TD_AGENT_OPTIONS=\\\"$TD_AGENT_OPTIONS --user root --group root\\\" >> $TD_DEFAULT_FILE"
-    fi
-else
-    $SUDO_CMD sh -c "echo TD_AGENT_OPTIONS=\\\"--user root --group root\\\" >> $TD_DEFAULT_FILE"
+if [ ! -e $TD_DEFAULT_FILE ]; then
+    $SUDO_CMD sh -c "echo TD_AGENT_USER=root >> $TD_DEFAULT_FILE"
+    $SUDO_CMD sh -c "echo TD_AGENT_GROUP=root >> $TD_DEFAULT_FILE"
 fi
 if [ -f /var/log/td-agent/td-agent.log ]; then
     $SUDO_CMD chown root:root /var/log/td-agent/td-agent.log
@@ -255,16 +264,18 @@ fi
 if [ -d /etc/systemd/system ]; then
     $SUDO_CMD mkdir -p /etc/systemd/system/td-agent.service.d
     $SUDO_CMD sh -c '/bin/echo -e "[Service]\nUser=root\nGroup=root\n" > /etc/systemd/system/td-agent.service.d/override.conf'
+    update_td_agent_service_file
+
     $SUDO_CMD cp -f /opt/zebrium/etc/zebrium-container-mon.service /etc/systemd/system/
     pushd /etc/systemd/system/ > /dev/null
-    systemctl enable zebrium-container-mon.service
+    $SUDO_CMD systemctl enable zebrium-container-mon.service
     popd > /dev/null
     $SUDO_CMD systemctl daemon-reload
     $SUDO_CMD systemctl start zebrium-container-mon.service
 fi
 
 # Set the configuration
-if egrep -q '@type[[:space:]]+zebrium' /etc/td-agent/td-agent.conf 2>/dev/null; then
+if egrep -q '@type[[:space:]]+zebrium' /etc/td-agent/td-agent.conf 2>/dev/null && [ $OVERWRITE_CONFIG -eq 0 ]; then
     echo -e "\033[34m\n* Keeping old /etc/td-agent/td-agent.conf configuration file\n\033[0m\n"
 else
     if [ -e /etc/td-agent/td-agent.conf ]; then
@@ -295,6 +306,7 @@ printf "\033[34m* Starting Zebrium log collector...\n\033[0m\n"
 # status
 set +e
 trap - ERR
+
 eval $restart_cmd >> $LOG_FILE 2>&1
 
 if which systemctl > /dev/null 2>&1 && systemctl -a | grep -q td-agent; then
@@ -320,7 +332,7 @@ And to run it again run:
 else
     while : ; do
         echo -e "\033[34m* Waiting for log collector to come up ...\n\033[0m\n"
-        /etc/init.d/td-agent status && break
+        $SUDO_CMD /etc/init.d/td-agent status && break
         sleep 5
     done
     printf "\033[32m
