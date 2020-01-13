@@ -10,7 +10,7 @@ Zebrium's fluentd output plugin sends the logs you collect with Fluentd to Zebri
 3. Run the following command in a shell on host:
    `curl https://raw.githubusercontent.com/zebrium/ze-fluentd-plugin/master/install_collector.sh | ZE_LOG_COLLECTOR_URL=<ZAPI_URL> ZE_LOG_COLLECTOR_TOKEN=<AUTH_TOKEN> ZE_HOST_TAGS="ze_deployment_name=<deployment_name>" /bin/bash`
 
-ZE_LOG_PATHS environment variables can be used to add more log file paths. The default log file paths is `"/var/log/*.log,/var/log/syslog,/var/log/messages,/var/log/secure"`. For example, to add app log file at /app1/log/app1.log, you can set the environment variable value to `"/app1/log/app1.log,/var/log/*.log,/var/log/syslog,/var/log/messages,/var/log/secure"`
+The default system log file paths is defined by ZE_LOG_PATHS environment variable. Its default value is `"/var/log/*.log,/var/log/syslog,/var/log/messages,/var/log/secure"`. ZE_USER_LOG_PATHS environment variable can be used to add more user specific log file paths. For example, to add app log files at /app1/log/app1.log and /app2/log/*.log, you can set ZE_USER_LOG_PATHS to `"/app1/log/app1.log,/app2/log/*.log"`
 
 ## Configuration
 The configuration file for td-agent is at `/etc/td-agent/td-agent.conf`.
@@ -42,6 +42,27 @@ The following parameters must be configured for your instance:
     <td>This parameter is optional. You can pass meta data in key-value pairs, the format is: "key1=value1,key2=value2". We suggest at least set one tag for deployment name: "ze_deployment_name=<your_deployment_name>".
   </tr>
 </table>
+
+User log paths can be configured via `/etc/zebrium/log-file-map.cfg`. During log collector service startup, if `/etc/zebrium/log-file-map.cfg exists`, log collector service script writes log paths defined in `/etc/zebrium/log-file-map.cfg` to `/etc/td-agent/conf.d/user.conf`. Please note any user log paths configured at installation time via ZE_USER_LOG_PATHS must be added to `/etc/zebrium/log-file-map.cfg` to avoid being overwritten.
+
+<pre>
+{
+  "mappings": [
+    {
+      "file": "/app1/log/error.log",
+      "alias": "app1error"
+    },
+    {
+      "file": "/app2/log/error.log",
+      "alias": "app2error"
+    },
+    {
+      "file": "/var/log/*.log",
+      "exclude": "/var/log/mydebug.log"
+    }
+  ]
+}
+</pre>
 
 ##### Environment Variables
 None
