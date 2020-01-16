@@ -43,22 +43,22 @@ The following parameters must be configured for your instance:
   </tr>
 </table>
 
-User log paths can be configured via `/etc/zebrium/log-file-map.cfg`. During log collector service startup, if `/etc/zebrium/log-file-map.cfg exists`, log collector service script writes log paths defined in `/etc/zebrium/log-file-map.cfg` to `/etc/td-agent/conf.d/user.conf`. Please note any user log paths configured at installation time via ZE_USER_LOG_PATHS must be added to `/etc/zebrium/log-file-map.cfg` to avoid being overwritten.
+User log paths can be configured via `/etc/td-agent/log-file-map.conf`. During log collector service startup, if `/etc/td-agent/log-file-map.conf exists`, log collector service script writes log paths defined in `/etc/td-agent/log-file-map.conf` to `/etc/td-agent/conf.d/user.conf`. Please note any user log paths configured at installation time via ZE_USER_LOG_PATHS must be added to `/etc/td-agent/log-file-map.conf` to avoid being overwritten.
 
 <pre>
 {
   "mappings": [
     {
       "file": "/app1/log/error.log",
-      "alias": "app1error"
+      "alias": "app1_error"
     },
     {
       "file": "/app2/log/error.log",
-      "alias": "app2error"
+      "alias": "app2_error"
     },
     {
       "file": "/var/log/*.log",
-      "exclude": "/var/log/mydebug.log"
+      "exclude": "/var/log/my_debug.log,/var/log/my_test.log"
     }
   ]
 }
