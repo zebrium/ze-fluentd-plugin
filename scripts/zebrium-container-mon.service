@@ -1,0 +1,17 @@
+[Unit]
+Description=zebrium-container-mon: Zebrium container monitoring service
+Documentation=https://www.zebrium.com
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=root
+Group=root
+Type=simple
+ExecStart=/opt/zebrium/bin/zebrium_container_mon.sh
+KillMode=process
+Restart=on-failure
+RestartSec=60s
+
+[Install]
+WantedBy=multi-user.target
