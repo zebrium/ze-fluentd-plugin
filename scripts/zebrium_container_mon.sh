@@ -9,6 +9,9 @@
 CONTAINER_LOG_DIR="/var/lib/zebrium/container_logs"
 
 update_log_links() {
+    if ! which docker > /dev/null; then
+        return
+    fi
     local CONTAINER_IDS=`docker ps --no-trunc --format "{{.ID}}"`
 
     mkdir -p $CONTAINER_LOG_DIR
