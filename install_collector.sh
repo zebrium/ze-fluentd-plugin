@@ -322,10 +322,12 @@ Zebrium Log Collector is running.
 
 If you ever want to stop the Log Collector, run:
 
+    sudo systemctl stop zebrium-container-mon
     sudo systemctl stop td-agent
 
 And to run it again run:
 
+    sudo systemctl start zebrium-container-mon
     sudo systemctl start td-agent
 
 \033[0m"

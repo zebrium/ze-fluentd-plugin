@@ -61,10 +61,11 @@ user_cfg = '<source>
   path "FILE_PATHS"
   exclude_path [EXCLUDE_PATHS]
   path_key tailed_path
+  tag node.logs.*
+  read_from_head true
   <parse>
     @type none
   </parse>
-  tag node.*
 </source>'
 
 user_cfg.sub!('FILE_PATHS', file_paths)
