@@ -12,6 +12,12 @@ Zebrium's fluentd output plugin sends the logs you collect with Fluentd to Zebri
 
 The default system log file paths is defined by ZE_LOG_PATHS environment variable. Its default value is `"/var/log/*.log,/var/log/syslog,/var/log/messages,/var/log/secure"`. ZE_USER_LOG_PATHS environment variable can be used to add more user specific log file paths. For example, to add app log files at /app1/log/app1.log and /app2/log/*.log, you can set ZE_USER_LOG_PATHS to `"/app1/log/app1.log,/app2/log/*.log"`
 
+## Upgrading
+Upgrading command is similar to installation command:
+1.  `curl https://raw.githubusercontent.com/zebrium/ze-fluentd-plugin/master/install_collector.sh | ZE_LOG_COLLECTOR_URL=<ZAPI_URL> ZE_LOG_COLLECTOR_TOKEN=<AUTH_TOKEN> ZE_HOST_TAGS="ze_deployment_name=<deployment_name>" OVERWRITE_CONFIG=1  /bin/bash`
+
+Please note setting `OVERWRITE_CONFIG` to 1 will cause `/etc/td-agent/td-agent.conf` to be upgraded to latest version.
+
 ## Configuration
 The configuration file for td-agent is at `/etc/td-agent/td-agent.conf`.
 The following parameters must be configured for your instance:
