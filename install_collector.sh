@@ -83,6 +83,7 @@ EOF
   path "$ZE_LOG_PATHS"
   format none
   path_key tailed_path
+  pos_file /var/log/td-agent/sys_logs.pos
   tag node.logs.*
   read_from_head true
 </source>
@@ -125,6 +126,7 @@ EOF
   @type tail
   path "/var/lib/zebrium/container_logs/*.log"
   path_key tailed_path
+  pos_file /var/log/td-agent/containers_logs.pos
   tag containers.*
   format json
   time_format %Y-%m-%dT%H:%M:%S.%NZ

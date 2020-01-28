@@ -61,6 +61,7 @@ user_cfg = '<source>
   path "FILE_PATHS"
   exclude_path [EXCLUDE_PATHS]
   path_key tailed_path
+  pos_file /var/log/td-agent/user_logs.pos
   tag node.logs.*
   read_from_head true
   <parse>
