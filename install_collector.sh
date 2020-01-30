@@ -151,6 +151,7 @@ else
 fi
 
 OVERWRITE_CONFIG=${OVERWRITE_CONFIG:-0}
+START_SERVICES=${START_SERVICES:-1}
 
 TEMP_DIR=/tmp/zlog-collector-install.$$
 mkdir -p $TEMP_DIR
@@ -274,7 +275,6 @@ if [ -d /etc/systemd/system ]; then
     $SUDO_CMD systemctl enable zebrium-container-mon.service
     popd > /dev/null
     $SUDO_CMD systemctl daemon-reload
-    $SUDO_CMD systemctl start zebrium-container-mon.service
 fi
 
 # Set the configuration
@@ -301,6 +301,35 @@ if [ -e /etc/systemd/system ]; then
     restart_cmd="$SUDO_CMD systemctl restart td-agent"
     if ! systemctl -a | grep td-agent; then
         $SUDO_CMD systemctl enable td-agent
+    fi
+fi
+
+if [ $START_SERVICES -eq 0 ]; then
+    if which systemctl > /dev/null 2>&1 && systemctl -a | grep -q td-agent; then
+        printf "\033[32m
+
+Zebrium Log Collector is not started.
+
+To start Log Collector manually, run:
+    sudo systemctl start zebrium-container-mon
+    sudo systemctl start td-agent
+
+\033[0m"
+
+    else
+        printf "\033[32m
+
+Zebrium Log Collector is not started.
+
+To start Log Collector manually, run:
+    sudo /etc/init.d/td-agent start
+
+\033[0m"
+    fi
+    exit 0
+else
+    if which systemctl > /dev/null 2>&1 && systemctl -a | grep -q zebrium-container-mon; then
+        $SUDO_CMD systemctl start zebrium-container-mon.service
     fi
 fi
 
