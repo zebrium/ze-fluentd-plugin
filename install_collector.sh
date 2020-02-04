@@ -114,6 +114,7 @@ EOF
   @type tail
   path "$ZE_USER_LOG_PATHS"
   path_key tailed_path
+  pos_file /var/log/td-agent/user_logs.pos
   <parse>
     @type none
   </parse>
