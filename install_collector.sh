@@ -130,6 +130,7 @@ EOF
   tag containers.*
   format json
   time_format %Y-%m-%dT%H:%M:%S.%NZ
+  utc true
 </source>
 EOF
 
