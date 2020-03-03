@@ -186,7 +186,7 @@ if [ $DISTRIBUTION = "Darwin" ]; then
     printf "\033[31mMac is not supported.\033[0m\n"
     exit 1;
 
-elif [ -f /etc/debian_version -o "$DISTRIBUTION" == "Debian" -o "$DISTRIBUTION" == "Ubuntu" ]; then
+elif [ -f /etc/debian_version -o "$DISTRIBUTION" == "Debian" -o "$DISTRIBUTION" == "Ubuntu" -o "$DISTRIBUTION" == "Linux" ]; then
     OS="Debian"
 elif [ -f /etc/redhat-release -o "$DISTRIBUTION" == "RedHat" -o "$DISTRIBUTION" == "CentOS" -o "$DISTRIBUTION" == "Amazon" ]; then
     OS="RedHat"
@@ -221,6 +221,12 @@ elif [ $OS = "Debian" ]; then
         if [ "$RELEASE_VERS" == "8" ]; then
             CODE_NAME="jessie"
         fi
+    fi
+    if [ "$CODE_NAME" == "tricia" -o "$CODE_NAME" == "tina" -o "$CODE_NAME" == "tessa" -o "$CODE_NAME" == "tara" ]; then
+        CODE_NAME="bionic"
+    fi
+    if [ "$CODE_NAME" == "sylvia" -o "$CODE_NAME" == "sonya" -o "$CODE_NAME" == "serena" -o "$CODE_NAME" == "sarah" ]; then
+        CODE_NAME="xenial"
     fi
     FLAVOR_STR=""
     if [ $IS_UBUNTU -ge 1 ]; then
