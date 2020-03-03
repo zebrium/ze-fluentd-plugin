@@ -145,11 +145,11 @@ EOF
 }
 
 if [ $(command -v curl) ]; then
-    DL_CMD="curl -O -L -f"
-    DL_SH_CMD="curl -q -L"
+    DL_CMD="curl --connect-timeout 30 --retry 3 --retry-delay 5 -O -L -f"
+    DL_SH_CMD="curl --connect-timeout 30 --retry 3 --retry-delay 5 -q -L"
 else
-    DL_CMD="wget --quiet"
-    DL_SH_CMD="wget -qO-"
+    DL_CMD="wget --quiet --dns-timeout=30 --connect-timeout=30"
+    DL_SH_CMD="wget --dns-timeout=30 --connect-timeout=30 -qO-"
 fi
 
 OVERWRITE_CONFIG=${OVERWRITE_CONFIG:-0}
