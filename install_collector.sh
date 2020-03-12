@@ -188,11 +188,10 @@ if [ $DISTRIBUTION = "Darwin" ]; then
 
 elif [ -f /etc/debian_version -o "$DISTRIBUTION" == "Debian" -o "$DISTRIBUTION" == "Ubuntu" -o "$DISTRIBUTION" == "Linux" ]; then
     OS="Debian"
-elif [ -f /etc/redhat-release -o "$DISTRIBUTION" == "RedHat" -o "$DISTRIBUTION" == "CentOS" -o "$DISTRIBUTION" == "Amazon" ]; then
+elif [ -f /etc/redhat-release -o "$DISTRIBUTION" == "RedHat" -o "$DISTRIBUTION" == "CentOS" ]; then
     OS="RedHat"
-# Some newer distros like Amazon may not have a redhat-release file
-elif [ -f /etc/system-release -o "$DISTRIBUTION" == "Amazon" ]; then
-    OS="RedHat"
+elif [ "$DISTRIBUTION" == "Amazon" ]; then
+    OS="Amazon"
 fi
 
 # Root user detection
@@ -210,6 +209,15 @@ if [ $OS = "RedHat" ]; then
         echo -e "\033[34m\n* Installing log collector dependencies\n\033[0m"
         $SUDO_CMD yum -y install gcc ruby-devel rubygems
         $DL_SH_CMD https://toolbelt.treasuredata.com/sh/install-redhat-td-agent3.sh | sh
+    fi
+elif [ $OS = "Amazon" ]; then
+    DEFAULTS_DIR=/etc/sysconfig
+    TD_AGENT_INSTALLED=$(yum list installed td-agent > /dev/null 2>&1 || echo "no")
+    AMZN_VERS=`uname -r | egrep -o  'amzn[[:digit:]]+' | sed 's/amzn//'`
+    if [ "$TD_AGENT_INSTALLED" == "no" ]; then
+        echo -e "\033[34m\n* Installing log collector dependencies\n\033[0m"
+        $SUDO_CMD yum -y install gcc ruby-devel rubygems
+        $DL_SH_CMD https://toolbelt.treasuredata.com/sh/install-amazon${AMZN_VERS}-td-agent3.sh | sh
     fi
 elif [ $OS = "Debian" ]; then
     DEFAULTS_DIR=/etc/default
