@@ -281,7 +281,7 @@ if [ -f /var/log/td-agent/td-agent.log ]; then
     $SUDO_CMD chown root:root /var/log/td-agent/td-agent.log
 fi
 
-if [ -d /etc/systemd/system ]; then
+if which systemctl > /dev/null 2>&1; then
     $SUDO_CMD mkdir -p /etc/systemd/system/td-agent.service.d
     $SUDO_CMD sh -c '/bin/echo -e "[Service]\nUser=root\nGroup=root\n" > /etc/systemd/system/td-agent.service.d/override.conf'
     update_td_agent_service_file
@@ -313,7 +313,7 @@ else
 fi
 
 restart_cmd="$SUDO_CMD /etc/init.d/td-agent restart"
-if [ -e /etc/systemd/system ]; then
+if which systemctl > /dev/null 2>&1; then
     restart_cmd="$SUDO_CMD systemctl restart td-agent"
     if ! systemctl -a | grep td-agent; then
         $SUDO_CMD systemctl enable td-agent
