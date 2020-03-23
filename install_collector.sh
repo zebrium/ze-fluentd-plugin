@@ -153,7 +153,7 @@ EOF
 </source>
 EOF
 
-    $SUDO_CMD mkdir /etc/td-agent
+    $SUDO_CMD mkdir -p /etc/td-agent
     $SUDO_CMD cp -f $MAIN_CONF_FILE /etc/td-agent/td-agent.conf
     $SUDO_CMD mkdir -p /etc/td-agent/conf.d
     $SUDO_CMD cp -f $USER_CONF_FILE /etc/td-agent/conf.d
