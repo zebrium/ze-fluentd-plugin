@@ -20,9 +20,7 @@ update_log_links() {
     for C in $CONTAINER_IDS; do
         local LPATH=`docker inspect --format '{{.LogPath}}' $C`
         local LINK=`basename $LPATH`
-        if [ -f $LINK ]; then
-            log INFO "Symbolic $LINK exists, skipping"
-        else
+        if [ ! -f $LINK ]; then
             ln -s $LPATH .
         fi
     done
