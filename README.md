@@ -94,8 +94,11 @@ On CentOS 6, Fluentd agent can be started or stopped with the command:
 ```
 sudo /etc/init.d/td-agent <start | stop>
 ```
-
 ## Testing your installation
 Once the collector has been deployed in your environment, your logs and anomaly detection will be available in the Zebrium UI.
+## Troubleshooting
+In the event that Zebrium requires the collector logs for troubleshooting, logs are located here:
+1. Collector installation log:  `/tmp/zlog-collector-install.log.*`
+2. Collector runtime log: `/var/log/td-agent/td-agent.log`
 ## Contributors
 * Brady Zuo (Zebrium)
