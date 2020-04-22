@@ -19,6 +19,10 @@ update_log_links() {
 
     for C in $CONTAINER_IDS; do
         local LPATH=`docker inspect --format '{{.LogPath}}' $C`
+        if [ -z "$LPATH" ]; then
+            log INFO "log path is empty, container $C may have been deleted"
+            continue
+        fi
         local LINK=`basename $LPATH`
         if [ ! -f $LINK ]; then
             ln -s $LPATH .
