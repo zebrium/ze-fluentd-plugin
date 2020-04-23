@@ -2,6 +2,8 @@
 Zebrium's fluentd output plugin sends the logs you collect with Fluentd on Linux to Zebrium for automated Anomaly detection.
 Our github repository is located [here](https://github.com/zebrium/ze-fluentd-plugin).
 
+For instructions on deploying our fluentd collector for Docker environmens, please see Docker setup [here](https://docs.zebrium.com/docs/setup/docker)
+
 # ze-fluentd-plugin
 
 ## Getting Started
