@@ -72,6 +72,6 @@ user_cfg = '<source>
 user_cfg.sub!('FILE_PATHS', file_paths)
 user_cfg.sub!('EXCLUDE_PATHS', exclude_paths)
 
-open('/etc/td-agent/conf.d/user.conf', 'w') { |f|
+open(user_fluentd_cfg_file, 'w') { |f|
   f.puts user_cfg
 }
