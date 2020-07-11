@@ -318,6 +318,9 @@ function main() {
                 CODE_NAME="jessie"
             fi
         fi
+        if [ "$CODE_NAME" == "focal" ]; then
+            err_exit "Sorry, currently Ubuntu 20.04 (focal) is not supported."
+        fi
         if [ "$CODE_NAME" == "tricia" -o "$CODE_NAME" == "tina" -o "$CODE_NAME" == "tessa" -o "$CODE_NAME" == "tara" ]; then
             CODE_NAME="bionic"
         fi
