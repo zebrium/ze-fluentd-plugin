@@ -249,8 +249,12 @@ function main() {
 
     # OS/Distro Detection
     # Try lsb_release, fallback with /etc/issue then uname command
-    KNOWN_DISTRIBUTION="(Debian|Ubuntu|RedHat|CentOS|Amazon)"
+    KNOWN_DISTRIBUTION="(Debian|Ubuntu|RedHat|REDHAT|CentOS|Amazon)"
     DISTRIBUTION=$(lsb_release -d 2>/dev/null | grep -Eo $KNOWN_DISTRIBUTION  || grep -Eo $KNOWN_DISTRIBUTION /etc/issue 2>/dev/null || grep -Eo $KNOWN_DISTRIBUTION /etc/Eos-release 2>/dev/null || grep -m1 -Eo $KNOWN_DISTRIBUTION /etc/os-release 2>/dev/null || uname -s)
+    if [ $DISTRIBUTION = "REDHAT" ]; then
+        # RHEL8 has "REDHAT" string instead of RedHat
+        DISTRIBUTION=RedHat
+    fi
 
     if [ $DISTRIBUTION = "Darwin" ]; then
         err_exit "Mac is not supported."
@@ -295,7 +299,7 @@ function main() {
         TD_AGENT_INSTALLED=$(yum list installed td-agent > /dev/null 2>&1 || echo "no")
         if [ "$TD_AGENT_INSTALLED" == "no" ]; then
             log info "Installing log collector dependencies"
-            $SUDO_CMD yum -y install gcc ruby-devel rubygems
+            $SUDO_CMD yum -y install gcc make ruby-devel rubygems
             $DL_SH_CMD https://toolbelt.treasuredata.com/sh/install-redhat-td-agent3.sh | sh
         fi
     elif [ $OS = "Amazon" ]; then
