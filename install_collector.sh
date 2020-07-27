@@ -79,7 +79,7 @@ function create_config() {
   <rule>
     key _SYSTEMD_UNIT
     pattern /^(.+)\.service$/
-    tag systemd.service.$1
+    tag systemd.service.\$1
   </rule>
 </match>
 
