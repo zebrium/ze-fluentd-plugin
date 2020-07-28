@@ -363,7 +363,7 @@ function main() {
 
     cd $TEMP_DIR
     log info "Downloading fluent-plugin-zebrium_output"
-    $DL_CMD https://github.com/zebrium/ze-fluentd-plugin/raw/master/pkgs/fluent-plugin-zebrium_output-1.37.0.gem
+    $DL_CMD https://github.com/zebrium/ze-fluentd-plugin/raw/master/pkgs/fluent-plugin-zebrium_output-1.37.1.gem
     log info "Installing fluent-plugin-zebrium_output"
     $SUDO_CMD td-agent-gem install fluent-plugin-systemd fluent-plugin-zebrium_output
 
