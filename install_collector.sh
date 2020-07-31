@@ -249,14 +249,9 @@ function main() {
 
     # OS/Distro Detection
     # Try lsb_release, fallback with /etc/issue then uname command
-    KNOWN_DISTRIBUTION="(Debian|Ubuntu|RedHat|REDHAT|CentOS|Amazon)"
-    DISTRIBUTION=$(lsb_release -d 2>/dev/null | grep -Eo $KNOWN_DISTRIBUTION  || grep -Eo $KNOWN_DISTRIBUTION /etc/issue 2>/dev/null || grep -Eo $KNOWN_DISTRIBUTION /etc/Eos-release 2>/dev/null || grep -m1 -Eo $KNOWN_DISTRIBUTION /etc/os-release 2>/dev/null || uname -s)
-    if [ $DISTRIBUTION = "REDHAT" ]; then
-        # RHEL8 has "REDHAT" string instead of RedHat
-        DISTRIBUTION=RedHat
-    fi
-    # Better detection for RHEL8
-    if grep -q 'Red Hat Enterprise Linux' /etc/os-release; then
+    KNOWN_DISTRIBUTION="(Debian|Ubuntu|Red Hat|RedHat|REDHAT|CentOS|Amazon)"
+    DISTRIBUTION=$(lsb_release -d 2>/dev/null | grep -Eo "$KNOWN_DISTRIBUTION"  || grep -Eo "$KNOWN_DISTRIBUTION" /etc/issue 2>/dev/null || grep -Eo "$KNOWN_DISTRIBUTION" /etc/Eos-release 2>/dev/null || grep -m1 -Eo "$KNOWN_DISTRIBUTION" /etc/os-release 2>/dev/null || uname -s)
+    if [ "$DISTRIBUTION" = "REDHAT" -o "$DISTRIBUTION" = "Red Hat" ]; then
         DISTRIBUTION=RedHat
     fi
 
