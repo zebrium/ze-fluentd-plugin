@@ -196,9 +196,23 @@ function do_uninstall() {
     log info "Removed Zebrium log collector"
 }
 
+function download_and_run_installer() {
+    local INSTALLER_URL=$1
+    if [ "$SUDO_DISABLED" = "1" ]; then
+        $DL_CMD $INSTALLER_URL
+        local SH_FILE=`basename $INSTALLER_URL`
+        log info "Patching $SH_FILE"
+        sed -i -e 's/sudo[[:space:]]\+-k//' -e 's/sudo[[:space:]]\+sh/sh/' $SH_FILE
+        sh $SH_FILE
+    else
+        $DL_SH_CMD $INSTALLER_URL | sh
+    fi
+}
+
 function main() {
     TEMP_DIR=/tmp/zlog-collector-install.$$
     mkdir -p $TEMP_DIR
+    cd $TEMP_DIR
 
     # Set up a named pipe for logging
     NPIPE=/tmp/$$.tmp
@@ -266,7 +280,8 @@ function main() {
     fi
 
     # Root user detection
-    if [ $(echo "$UID") = "0" ]; then
+    if [ $(echo "$UID") = "0" -o "$SUDO_DISABLED" = "1" ]; then
+        log info "SUDO_DISABLED is set to 1"
         SUDO_CMD=''
     else
         SUDO_CMD='sudo'
@@ -299,7 +314,7 @@ function main() {
         if [ "$TD_AGENT_INSTALLED" == "no" ]; then
             log info "Installing log collector dependencies"
             $SUDO_CMD yum -y install gcc make ruby-devel rubygems
-            $DL_SH_CMD https://toolbelt.treasuredata.com/sh/install-redhat-td-agent3.sh | sh
+            download_and_run_installer https://toolbelt.treasuredata.com/sh/install-redhat-td-agent3.sh
         fi
     elif [ $OS = "Amazon" ]; then
         DEFAULTS_DIR=/etc/sysconfig
@@ -308,7 +323,7 @@ function main() {
         if [ "$TD_AGENT_INSTALLED" == "no" ]; then
             log info "Installing log collector dependencies"
             $SUDO_CMD yum -y install gcc ruby-devel rubygems
-            $DL_SH_CMD https://toolbelt.treasuredata.com/sh/install-amazon${AMZN_VERS}-td-agent3.sh | sh
+            download_and_run_installer https://toolbelt.treasuredata.com/sh/install-amazon${AMZN_VERS}-td-agent3.sh
         fi
     elif [ $OS = "Debian" ]; then
         DEFAULTS_DIR=/etc/default
@@ -343,7 +358,7 @@ function main() {
         $SUDO_CMD apt-get install -y build-essential ruby-dev
 
         log info "Installing log collector dependencies"
-        $DL_SH_CMD https://toolbelt.treasuredata.com/sh/install-${FLAVOR_STR}-${CODE_NAME}-td-agent3.sh | sh
+        download_and_run_installer https://toolbelt.treasuredata.com/sh/install-${FLAVOR_STR}-${CODE_NAME}-td-agent3.sh
     else
         log info "Your OS or distribution are not supported by this install script."
         exit;
@@ -356,7 +371,6 @@ function main() {
     log info "Uninstalling fluent-plugin-zebrium_output"
     $SUDO_CMD td-agent-gem uninstall fluent-plugin-zebrium_output
 
-    cd $TEMP_DIR
     log info "Downloading fluent-plugin-zebrium_output"
     $DL_CMD https://github.com/zebrium/ze-fluentd-plugin/raw/master/pkgs/fluent-plugin-zebrium_output-1.37.1.gem
     log info "Installing fluent-plugin-zebrium_output"
