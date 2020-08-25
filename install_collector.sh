@@ -6,6 +6,7 @@
 
 set -e
 LOG_FILE="/tmp/zlog-collector-install.log.$$"
+VERSION=1.37.2
 
 PROG=${0##*/}
 
@@ -36,6 +37,7 @@ function cleanup() {
 }
 
 function on_error() {
+    print_debug_info
     printf "\033[31m$ERROR_MESSAGE
 It looks like you hit an issue when trying to install zebrium log collector.
 
@@ -209,6 +211,20 @@ function download_and_run_installer() {
     fi
 }
 
+function print_debug_info() {
+    echo "Installer versoin $VERSION"
+    echo ""
+    echo "OS information:"
+    echo "uname -a"
+    uname -a
+    echo ""
+    echo "cat /etc/os-release"
+    cat /etc/os-release
+    echo ""
+    echo "cat /etc/issue"
+    cat /etc/issue
+}
+
 function main() {
     TEMP_DIR=/tmp/zlog-collector-install.$$
     mkdir -p $TEMP_DIR
@@ -224,6 +240,8 @@ function main() {
     exec 1>$NPIPE 2>&1
     trap cleanup EXIT
     trap on_error ERR
+
+    print_debug_info
 
     local OP="install"
     local OP_OPT=""
