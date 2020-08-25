@@ -218,11 +218,20 @@ function print_debug_info() {
     echo "uname -a"
     uname -a
     echo ""
-    echo "cat /etc/os-release"
-    cat /etc/os-release
-    echo ""
-    echo "cat /etc/issue"
-    cat /etc/issue
+    if [ -f /etc/os-release ]; then
+        echo "cat /etc/os-release"
+        cat /etc/os-release
+        echo ""
+    else
+        echo "/etc/os-release does not exist"
+        echo ""
+    fi
+    if [ -f /etc/issue ]; then
+        echo "cat /etc/issue"
+        cat /etc/issue
+     else
+        echo "/etc/issue does not exist"
+     fi
 }
 
 function main() {
