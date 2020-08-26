@@ -337,6 +337,11 @@ function main() {
     # Install the Fluentd, plugin and their depedencies
     if [ $OS = "RedHat" ]; then
         DEFAULTS_DIR=/etc/sysconfig
+        MAJOR_VERS=`lsb_release -r | awk '{ print $2 }' | cut -f1 -d.`
+        if (($MAJOR_VERS < 7)); then
+            err_exit "RHEL/CentOS 6 is not supported"
+        fi
+
         TD_AGENT_INSTALLED=$(yum list installed td-agent > /dev/null 2>&1 || echo "no")
         if [ "$TD_AGENT_INSTALLED" == "no" ]; then
             log info "Installing log collector dependencies"
