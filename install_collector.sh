@@ -337,9 +337,14 @@ function main() {
     # Install the Fluentd, plugin and their depedencies
     if [ $OS = "RedHat" ]; then
         DEFAULTS_DIR=/etc/sysconfig
-        MAJOR_VERS=`lsb_release -r | awk '{ print $2 }' | cut -f1 -d.`
+        MAJOR_VERS=""
+        if which lsb_release > /dev/null 2>&1; then
+            MAJOR_VERS=`lsb_release -r | awk '{ print $2 }' | cut -f1 -d.`
+        else
+            MAJOR_VERS=`awk -F= '/VERSION_ID/ { print $2 }' /etc/os-release | sed 's/"//g' | cut -f1 -d.`
+        fi
         if (($MAJOR_VERS < 7)); then
-            err_exit "RHEL/CentOS 6 is not supported"
+            err_exit "RHEL/CentOS $MAJOR_VERS is not supported"
         fi
 
         TD_AGENT_INSTALLED=$(yum list installed td-agent > /dev/null 2>&1 || echo "no")
