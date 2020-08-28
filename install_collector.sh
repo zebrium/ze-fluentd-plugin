@@ -414,7 +414,7 @@ function main() {
     $SUDO_CMD td-agent-gem install fluent-plugin-systemd fluent-plugin-zebrium_output
 
     log info "Downloading zebrium-fluentd package"
-    $DL_CMD https://github.com/zebrium/ze-fluentd-plugin/raw/master/pkgs/zebrium-fluentd-1.18.0.tgz
+    $DL_CMD https://github.com/zebrium/ze-fluentd-plugin/releases/download/1.37.2/zebrium-fluentd-1.18.0.tgz
     log info "Installing zebrium-fluentd"
     $SUDO_CMD tar -C /opt -xf zebrium-fluentd-1.18.0.tgz
 
