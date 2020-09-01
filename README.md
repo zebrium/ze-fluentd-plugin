@@ -6,6 +6,12 @@ For instructions on deploying our fluentd collector for Docker environmens, plea
 
 # ze-fluentd-plugin
 
+## System Requirements
+The following OS distributions are supported:
+1. Ubuntu 16.04/18.04/20.04
+2. CentOS/RHEL 7/8
+3. Amazon Linux 2
+
 ## Getting Started
 ### Installing
 1. Get Zebrium API server URL and authentication token from [Zebrium](https://www.zebrium.com).
