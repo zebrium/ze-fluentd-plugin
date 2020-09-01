@@ -32,6 +32,39 @@ Please note setting `OVERWRITE_CONFIG` to 1 will cause `/etc/td-agent/td-agent.c
 ```
 curl https://raw.githubusercontent.com/zebrium/ze-fluentd-plugin/master/install_collector.sh | ZE_OP=uninstall /bin/bash
 ```
+## Installing on Host with Existing td-agent
+
+It is possible to add Zebrium output plugin on a host with existing td-agent configuration without running Zebrium log collector installer.
+1. Download Zebrium output plugin from `https://github.com/zebrium/ze-fluentd-plugin/releases/download/1.37.2/fluent-plugin-zebrium_output-1.37.2.gem`
+2. Run the following command in the same directory where `fluent-plugin-zebrium_output-1.37.2.gem` is saved:
+```
+sudo td-agent-gem install fluent-plugin-zebrium_output
+```
+3. Add Zebrium output configuration to `/etc/td-agent/td-ageng.conf`. Below is an example configuration which duplicates log messages and sends one copy to Zebrium.
+```
+<match **>
+  @type copy
+  # Zebrium log collector
+  <store>
+    @type zebrium
+    ze_log_collector_url "ZE_LOG_COLLECTOR_URL"
+    ze_log_collector_token "ZE_LOG_COLLECTOR_TOKEN"
+    ze_host_tags "ze_deployment_name=#{Socket.gethostname},myapp=test2"
+    @log_level "info"
+    <buffer tag>
+      @type file
+      path "/var/td-agent/zebrium"
+      flush_mode "interval"
+      flush_interval "60s"
+    </buffer>
+  </store>
+  <store>
+      @type OTHER_OUTPUT_PLUGIN
+      ...
+  </store>
+</match>
+```
+
 ## Configuration
 The configuration file for td-agent is at `/etc/td-agent/td-agent.conf`.
 The following parameters must be configured for your instance:
