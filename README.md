@@ -119,15 +119,10 @@ User log paths can be configured via `/etc/td-agent/log-file-map.conf`. During l
 ### Environment Variables
 None
 ## Usage
-### Start/stop Fluentd on CentOS 7/Ubuntu 16.04/18.04
+### Start/stop Fluentd
 Fluentd agent can be started or stopped with the command:
 ```
 sudo systemctl <start | stop> td-agent
-```
-### Start/stop Fluentd on CentOS 6
-On CentOS 6, Fluentd agent can be started or stopped with the command:
-```
-sudo /etc/init.d/td-agent <start | stop>
 ```
 ## Testing your installation
 Once the collector has been deployed in your environment, your logs and anomaly detection will be available in the Zebrium UI.
