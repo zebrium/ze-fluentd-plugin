@@ -13,63 +13,70 @@ The following OS distributions are supported:
 3. Amazon Linux 2
 
 ## Getting Started
+
 ### Installing
+
 1. Get Zebrium API server URL and authentication token from [Zebrium](https://www.zebrium.com).
 2. Determine what deployment name to use.
 3. Run the following command in a shell on host:
-```
-curl https://raw.githubusercontent.com/zebrium/ze-fluentd-plugin/master/install_collector.sh | ZE_LOG_COLLECTOR_URL=<ZAPI_URL> ZE_LOG_COLLECTOR_TOKEN=<AUTH_TOKEN> ZE_HOST_TAGS="ze_deployment_name=<deployment_name>" /bin/bash
-```
-The default system log file paths are defined by the ZE_LOG_PATHS environment variable. Its default value is
-```
-"/var/log/*.log,/var/log/syslog,/var/log/messages,/var/log/secure"
-```
-The ZE_USER_LOG_PATHS environment variable can be used to add more user specific log file paths. For example, to add app log files at `/app1/log/app1.log` and `/app2/log/\*.log`, you can set ZE_USER_LOG_PATHS to:
-```
-"/app1/log/app1.log,/app2/log/*.log"
-```
+   ```
+   curl https://raw.githubusercontent.com/zebrium/ze-fluentd-plugin/master/install_collector.sh | ZE_LOG_COLLECTOR_URL=<ZAPI_URL> ZE_LOG_COLLECTOR_TOKEN=<AUTH_TOKEN> ZE_HOST_TAGS="ze_deployment_name=<deployment_name>" /bin/bash
+   ```
+   The default system log file paths are defined by the ZE_LOG_PATHS environment variable. Its default value is
+   ```
+   "/var/log/*.log,/var/log/syslog,/var/log/messages,/var/log/secure"
+   ```
+   The ZE_USER_LOG_PATHS environment variable can be used to add more user specific log file paths. For example, to add app log files at `/app1/log/app1.log` and `/app2/log/\*.log`, you can set ZE_USER_LOG_PATHS to:
+   ```
+   "/app1/log/app1.log,/app2/log/*.log"
+   ```
+
 ## Upgrading
 The upgrade command is similar to the installation command:
+
 ```
 curl https://raw.githubusercontent.com/zebrium/ze-fluentd-plugin/master/install_collector.sh | ZE_LOG_COLLECTOR_URL=<ZAPI_URL> ZE_LOG_COLLECTOR_TOKEN=<AUTH_TOKEN> ZE_HOST_TAGS="ze_deployment_name=<deployment_name>" OVERWRITE_CONFIG=1 /bin/bash
 ```
 Please note setting `OVERWRITE_CONFIG` to 1 will cause `/etc/td-agent/td-agent.conf` to be upgraded to latest version.
+
 ## Uninstalling
+
 ```
 curl https://raw.githubusercontent.com/zebrium/ze-fluentd-plugin/master/install_collector.sh | ZE_OP=uninstall /bin/bash
 ```
+
 ## Installing on Hosts with Existing td-agent Configuration
 
 It is possible to add Zebrium output plugin on a host with existing td-agent configuration without running Zebrium log collector installer.
 1. Download Zebrium output plugin from `https://github.com/zebrium/ze-fluentd-plugin/releases/download/1.37.2/fluent-plugin-zebrium_output-1.37.2.gem`
 2. Run the following command in the same directory where `fluent-plugin-zebrium_output-1.37.2.gem` is saved:
-```
-sudo td-agent-gem install fluent-plugin-zebrium_output
-```
+   ```
+   sudo td-agent-gem install fluent-plugin-zebrium_output
+   ```
 3. Add Zebrium output configuration to `/etc/td-agent/td-ageng.conf`. Below is an example configuration which duplicates log messages and sends one copy to Zebrium.
-```
-<match **>
-  @type copy
-  # Zebrium log collector
-  <store>
-    @type zebrium
-    ze_log_collector_url "ZE_LOG_COLLECTOR_URL"
-    ze_log_collector_token "ZE_LOG_COLLECTOR_TOKEN"
-    ze_host_tags "ze_deployment_name=#{Socket.gethostname},myapp=test2"
-    @log_level "info"
-    <buffer tag>
-      @type file
-      path "/var/td-agent/zebrium"
-      flush_mode "interval"
-      flush_interval "60s"
-    </buffer>
-  </store>
-  <store>
-      @type OTHER_OUTPUT_PLUGIN
-      ...
-  </store>
-</match>
-```
+   ```
+   <match **>
+     @type copy
+     # Zebrium log collector
+     <store>
+       @type zebrium
+       ze_log_collector_url "ZE_LOG_COLLECTOR_URL"
+       ze_log_collector_token "ZE_LOG_COLLECTOR_TOKEN"
+       ze_host_tags "ze_deployment_name=#{Socket.gethostname},myapp=test2"
+       @log_level "info"
+       <buffer tag>
+         @type file
+         path "/var/td-agent/zebrium"
+         flush_mode "interval"
+         flush_interval "60s"
+       </buffer>
+     </store>
+     <store>
+         @type OTHER_OUTPUT_PLUGIN
+         ...
+     </store>
+   </match>
+   ```
 
 ## Configuration
 The configuration file for td-agent is at `/etc/td-agent/td-agent.conf`.
