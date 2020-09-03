@@ -122,6 +122,40 @@ User log paths can be configured via `/etc/td-agent/log-file-map.conf`. During l
   ]
 }
 ```
+### Filtering Specific Log Events
+If you wish to exclude certain sensitive or noisy events from being sent to Zebrium, you can filter them at the source collection point by doing the following:
+
+1. Add the following in /etc/td-agent/td-agent.conf after other "@include":
+   ```
+   @include conf.d/log_msg_filters.conf
+   ```
+2. Create a config file /etc/td-agent/conf.d/log_msg_filters.conf containing:
+   ```
+   <filter TAG_FOR_LOG_FILE>
+     @type grep
+     <exclude>
+       key message
+       pattern /<PATTERN_FOR_LOG_MESSAGES>/
+   </exclude>
+   </filter>
+   ```
+3. Restart td-agent: sudo systemctl restart td-agent
+
+**Example**
+
+Below is an example `log_msg_filters.conf` for filtering out specific messages from a Vertica log file at `/fast1/vertica_catalog/zdb/v_zdb_node0001_catalog/vertica.log`
+
+In this example, the Fluentd tag for file is node.logs.<FILE_NAME_REPLACE_/_WITH_DOT> (i.e replace all slashes with dots in the file path).
+
+```
+<filter node.logs.fast1.vertica_catalog.zdb.v_zdb_node0001_catalog.vertica.log>
+  @type grep
+  <exclude>
+    key message
+    pattern /^[^2]|^.[^0]|TM Merge|Authenticat|[Ll]oad *[Bb]alanc[ei]|\[Session\] <INFO>|\[Catalog\] <INFO>|\[Txn\] <INFO>|Init Session.*<LOG>/
+  </exclude>
+</filter>
+```
 ### Environment Variables
 None
 ## Usage
@@ -136,5 +170,8 @@ Once the collector has been deployed in your environment, your logs and anomaly 
 In the event that Zebrium requires the collector logs for troubleshooting, logs are located here:
 1. Collector installation log:  `/tmp/zlog-collector-install.log.*`
 2. Collector runtime log: `/var/log/td-agent/td-agent.log`
+
+Please contact Zebrium at <support@zebrium.com> if you need any assistance.
+
 ## Contributors
 * Brady Zuo (Zebrium)
