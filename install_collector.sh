@@ -121,6 +121,8 @@ $SYSTEMD_INCLUDE
   <buffer tag>
     @type file
     path /var/log/td-agent/buffer/out_zebrium.*.buffer
+    chunk_limit_size "1MB"
+    chunk_limit_records "4096"
     flush_mode "interval"
     flush_interval "60s"
   </buffer>
