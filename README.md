@@ -107,6 +107,16 @@ The following parameters must be configured for your instance:
     <td>Host meta data</td>
     <td>This parameter is optional. You can pass meta data in key-value pairs, the format is: "key1=value1,key2=value2". We suggest at least set one tag for deployment name: "ze_deployment_name=&lt;your_deployment_name&gt;"</td>
   </tr>
+  <tr>
+    <td>ze_host_in_logpath</td>
+    <td>Log path component for remote host name </td>
+    <td>This parameter is optional. For situations where a remote host name is embedded in the log file directory path structure, e.g. "/var/log/remote/&lt;host&gt;/...", this can be used as the originating host for the log by setting this parameter to the path component to be used for the hostname. The value should be an integer, 1-based. In this example the configuration would be "ze_host_in_logpath=4".</td>
+  </tr>
+  <tr>
+    <td>ze_forward_tag</td>
+    <td>Tag to specify log-forwarded sources</td>
+    <td>This parameter is optional. It can be used to indicate sources that are being used for remote log forwarding, by specifying a specific fluentd "tag" to one or more sources.  The default tag value is "ze_forwarded_logs".</td> 
+  </tr>
 </table>
 
 ### User Log Paths
@@ -182,3 +192,4 @@ Please contact Zebrium at <support@zebrium.com> if you need any assistance.
 
 ## Contributors
 * Brady Zuo (Zebrium)
+* Rob Fair (Zebrium)
