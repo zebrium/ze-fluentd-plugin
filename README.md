@@ -119,6 +119,7 @@ The following parameters must be configured for your instance:
   </tr>
     <tr>
       <td>ze_path_map_file</td>
+      <td>Path mapping file</td>
       <td>This parameter is optional. It allows embedded semantic data (ids, tags,configs) in logfile paths to be parsed and added to Zebrium log data. Set to the full path of a JSON file containing mapping information. Default is empty string. See below under Log Path Mapping</td>
     </tr>
 </table>
