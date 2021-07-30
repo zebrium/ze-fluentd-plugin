@@ -117,6 +117,10 @@ The following parameters must be configured for your instance:
     <td>Tag to specify log-forwarded sources</td>
     <td>This parameter is optional. It can be used to indicate sources that are being used for remote log forwarding, by specifying a specific fluentd "tag" to one or more sources.  The default tag value is "ze_forwarded_logs".</td> 
   </tr>
+    <tr>
+      <td>ze_path_map_file</td>
+      <td>This parameter is optional. It allows embedded semantic data (ids, tags,configs) in logfile paths to be parsed and added to Zebrium log data. Set to the full path of a JSON file containing mapping information. Default is empty string. See below under Log Path Mapping</td>
+    </tr>
 </table>
 
 ### User Log Paths
@@ -173,6 +177,32 @@ In this example, the Fluentd tag for file is node.logs.<FILE_NAME_REPLACE_/_WITH
   </exclude>
 </filter>
 ```
+### Log Path Mapping
+Log path mapping allows semantic information (ids, configs and tags) to be extracted from log paths
+and passed to the Zebrium backend. For example, log-file specific host information or business-related
+tags that are embedded in the path of the log file can be extracted..
+
+Log path mapping is configured using a JSON file, with format:
+```
+{
+  "mappings": {
+    "patterns": [
+      "regex1", ...
+    ],
+    "tags": [
+      "tag_name", ...
+    ],
+    "ids": [
+      "id_name",...
+    ],
+    "configs": [
+       "config_name",...
+    ]
+  }
+}
+```
+Set "patterns" to regular expressions to match the log file path. Each regex named capture in a matching regular expression will be compared to the "tags", "ids" and "configs" sections and added to the corresponding record section(s).
+Use the ze_path_map_file configuration parameter to specify the path to the JSON file.
 ### Environment Variables
 None
 ## Usage
