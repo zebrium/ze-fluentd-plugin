@@ -6,7 +6,7 @@
 
 set -e
 LOG_FILE="/tmp/zlog-collector-install.log.$$"
-VERSION=1.49.2
+VERSION=1.49.3
 
 PROG=${0##*/}
 
@@ -412,7 +412,7 @@ function main() {
     $SUDO_CMD td-agent-gem uninstall fluent-plugin-zebrium_output
 
     log info "Downloading fluent-plugin-zebrium_output"
-    $DL_CMD https://github.com/zebrium/ze-fluentd-plugin/releases/download/1.49.2/fluent-plugin-zebrium_output-1.49.2.gem
+    $DL_CMD https://github.com/zebrium/ze-fluentd-plugin/releases/download/1.49.3/fluent-plugin-zebrium_output-1.49.3.gem
     log info "Installing fluent-plugin-zebrium_output"
     $SUDO_CMD td-agent-gem install fluent-plugin-systemd fluent-plugin-zebrium_output
 
