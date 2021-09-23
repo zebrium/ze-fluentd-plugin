@@ -201,6 +201,13 @@ function do_uninstall() {
     log info "Removed Zebrium log collector"
 }
 
+function download_installer() {
+    local INSTALLER_URL=$1
+    $DL_CMD $INSTALLER_URL
+    local SH_FILE=`basename $INSTALLER_URL`
+    sed -i -e 's/sudo[[:space:]]\+-k//' -e 's/sudo[[:space:]]\+sh/sh/' $SH_FILE
+}
+
 function download_and_run_installer() {
     local INSTALLER_URL=$1
     if [ "$SUDO_DISABLED" = "1" ]; then
@@ -349,12 +356,27 @@ function main() {
         if (($MAJOR_VERS < 7)); then
             err_exit "RHEL/CentOS $MAJOR_VERS is not supported"
         fi
-
+        # Assume Fedora, attempt to map known versions
+        if (($MAJOR_VERS >28)); then
+            MAJOR_VERS=8
+        elif (($MAJOR_VERS >20)); then
+            MAJOR_VERS=7
+        fi
         TD_AGENT_INSTALLED=$(yum list installed td-agent > /dev/null 2>&1 || echo "no")
         if [ "$TD_AGENT_INSTALLED" == "no" ]; then
             log info "Installing log collector dependencies"
             $SUDO_CMD yum -y install gcc make ruby-devel rubygems
-            download_and_run_installer https://toolbelt.treasuredata.com/sh/install-redhat-td-agent3.sh
+
+            # treasuredata releases are '7', '8' etc but releasever added by installed may not match
+            SH_FILE=install-redhat-td-agent3.sh
+            download_installer https://toolbelt.treasuredata.com/sh/$SH_FILE
+            MAJOR_VERS=`echo $MAJOR_VERS | sed 's/\..*//'`
+            sed -i -e "s/\\\\\$releasever/$MAJOR_VERS/" $SH_FILE
+            if [ "$SUDO_DISABLED" = "1" ]; then
+                bash $SH_FILE && rm $SH_FILE
+            else 
+                $SUDO_CMD bash $SH_FILE && rm $SH_FILE
+            fi
         fi
     elif [ $OS = "Amazon" ]; then
         DEFAULTS_DIR=/etc/sysconfig
