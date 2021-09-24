@@ -24,9 +24,14 @@ if not File.exist?(file_map_cfg_file)
     file_map_cfg_file = old_file_map_cfg_file
 end
 
-log.info(file_map_cfg_file + " exist")
+log.info(file_map_cfg_file + " exists.")
 file = File.read(file_map_cfg_file)
-file_mappings = JSON.parse(file)
+begin
+  file_mappings = JSON.parse(file)
+rescue
+  log.error(file_map_cfg_file+" does not appear to contain valid JSON. Please correct problem(s) and retry.")
+  exit(1)
+end
 
 file_paths = ''
 exclude_paths = ''
