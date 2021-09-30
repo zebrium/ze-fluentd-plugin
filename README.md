@@ -16,6 +16,7 @@ The following OS distributions are supported:
 
 ### Installing
 
+0. If the environment uses a proxy server please the section "Operation with a Proxy Server" below.
 1. Get Zebrium API server URL and authentication token from [Zebrium](https://www.zebrium.com).
 2. Determine what deployment name to use.
 3. Run the following command in a shell on host:
@@ -53,7 +54,7 @@ It is possible to add Zebrium output plugin on a host with existing td-agent con
    ```
    sudo td-agent-gem install fluent-plugin-zebrium_output
    ```
-3. Add Zebrium output configuration to `/etc/td-agent/td-ageng.conf`. Below is an example configuration which duplicates log messages and sends one copy to Zebrium.
+3. Add Zebrium output configuration to `/etc/td-agent/td-agent.conf`. Below is an example configuration which duplicates log messages and sends one copy to Zebrium.
    ```
    <match **>
      @type copy
@@ -205,7 +206,7 @@ Log path mapping is configured using a JSON file, with format:
 Set "patterns" to regular expressions to match the log file path. Each regex named capture in a matching regular expression will be compared to the "tags", "ids" and "configs" sections and added to the corresponding record section(s).
 Use the ze_path_map_file configuration parameter to specify the path to the JSON file.
 ### Environment Variables
-None
+If the environment is using a proxy server to access the Internet then standard variables (e.g. http\_proxy) should be configured prior to installation. Please see below at "Operation with a Proxy Server".
 ## Usage
 ### Start/stop Fluentd
 Fluentd agent can be started or stopped with the command:
@@ -216,11 +217,34 @@ sudo systemctl <start | stop> td-agent
 Once the collector has been deployed in your environment, your logs and anomaly detection will be available in the Zebrium UI.
 ## Troubleshooting
 In the event that Zebrium requires the collector logs for troubleshooting, logs are located here:
+
 1. Collector installation log:  `/tmp/zlog-collector-install.log.*`
+
 2. Collector runtime log: `/var/log/td-agent/td-agent.log`
 
-Please contact Zebrium at <support@zebrium.com> if you need any assistance.
+In case of an HTTP connection error, please check the spelling of the Zebrium host URL. Also check that any network proxy servers are configured appropriately.
 
+Please contact Zebrium at <support@zebrium.com> if you need any assistance.
+## Operation with a Proxy Server
+If the agent environment requires a non-transparent proxy server to be configured this should be done at two points:
+
+* The standard http\_proxy and https\_proxy environment variables must be set in the local environment when the installer is run. This allows the installer to access the Internet to download necessary components.
+
+* After installation is run the system service also needs to have the same environment variables available. This allows the Zebrium agent to communicate with the log host to send logs.
+
+### Setting proxy server in a systemd environment
+If the agent service is run from systemd and a proxy server is in use, the service needs to have the appropriate proxy configuration added to systemd. (This may not be needed if your system is already configured so that all systemd services globally use a proxy.) To do this, after the installation is performed edit the file /etc/systemd/service/td-agent.service.d/override.conf to add environment configuration lines for the proxy server, for example:
+
+```
+Environment=http_proxy=myproxy.example.com:8080
+```
+After this is done the systemd daemon should be reloaded, and then the service started:
+
+```
+sudo systemctl daemon-reload
+
+sudo systemctl restart td-agent
+```
 ## Contributors
 * Brady Zuo (Zebrium)
 * Rob Fair (Zebrium)
