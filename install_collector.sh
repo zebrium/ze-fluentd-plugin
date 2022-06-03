@@ -1,5 +1,5 @@
 #!/bin/bash
-# (C) Zebrium, Inc. 2019
+# (C) Zebrium, Inc. 2022
 # All rights reserved
 # Licensed under Simplified BSD License (see LICENSE)
 # Zebrium Log Collector installation script: install and set up the log collector.
@@ -368,7 +368,7 @@ function main() {
             $SUDO_CMD yum -y install gcc make ruby-devel rubygems
 
             # treasuredata releases are '7', '8' etc but releasever added by installed may not match
-            SH_FILE=install-redhat-td-agent3.sh
+            SH_FILE=install-redhat-td-agent4.sh
             download_installer https://toolbelt.treasuredata.com/sh/$SH_FILE
             MAJOR_VERS=`echo $MAJOR_VERS | sed 's/\..*//'`
             sed -i -e "s/\\\\\$releasever/$MAJOR_VERS/" $SH_FILE
@@ -385,7 +385,7 @@ function main() {
         if [ "$TD_AGENT_INSTALLED" == "no" ]; then
             log info "Installing log collector dependencies"
             $SUDO_CMD yum -y install gcc ruby-devel rubygems
-            download_and_run_installer https://toolbelt.treasuredata.com/sh/install-amazon${AMZN_VERS}-td-agent3.sh
+            download_and_run_installer https://toolbelt.treasuredata.com/sh/install-amazon${AMZN_VERS}-td-agent4.sh
         fi
     elif [ $OS = "Debian" ]; then
         DEFAULTS_DIR=/etc/default
@@ -420,7 +420,7 @@ function main() {
         $SUDO_CMD apt-get install -y build-essential ruby-dev
 
         log info "Installing log collector dependencies"
-        download_and_run_installer https://toolbelt.treasuredata.com/sh/install-${FLAVOR_STR}-${CODE_NAME}-td-agent3.sh
+        download_and_run_installer https://toolbelt.treasuredata.com/sh/install-${FLAVOR_STR}-${CODE_NAME}-td-agent4.sh
     else
         log info "Your OS or distribution are not supported by this install script."
         exit;
@@ -433,8 +433,6 @@ function main() {
     log info "Uninstalling fluent-plugin-zebrium_output"
     $SUDO_CMD td-agent-gem uninstall fluent-plugin-zebrium_output
 
-    log info "Downloading fluent-plugin-zebrium_output"
-    $DL_CMD https://github.com/zebrium/ze-fluentd-plugin/releases/download/1.49.3/fluent-plugin-zebrium_output-1.49.3.gem
     log info "Installing fluent-plugin-zebrium_output"
     $SUDO_CMD td-agent-gem install fluent-plugin-systemd fluent-plugin-zebrium_output
 

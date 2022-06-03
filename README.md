@@ -48,9 +48,8 @@ curl https://raw.githubusercontent.com/zebrium/ze-fluentd-plugin/master/install_
 
 ## Installing on Hosts with Existing td-agent Configuration
 
-It is possible to add Zebrium output plugin on a host with existing td-agent configuration without running Zebrium log collector installer.
-1. Download Zebrium output plugin from `https://github.com/zebrium/ze-fluentd-plugin/releases/download/1.37.2/fluent-plugin-zebrium_output-1.37.2.gem`
-2. Run the following command in the same directory where `fluent-plugin-zebrium_output-1.37.2.gem` is saved:
+It is possible to add Zebrium output plugin on a host with existing td-agent configuration without running Zebrium log collector installer.  Zebrium output plugin is provided through RubyGems [here](https://rubygems.org/gems/fluent-plugin-zebrium_output)
+1. Run the following command:
    ```
    sudo td-agent-gem install fluent-plugin-zebrium_output
    ```
@@ -248,3 +247,4 @@ sudo systemctl restart td-agent
 ## Contributors
 * Brady Zuo (Zebrium)
 * Rob Fair (Zebrium)
+* Braeden Earp (Zebrium)
