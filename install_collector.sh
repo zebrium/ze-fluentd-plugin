@@ -191,7 +191,7 @@ function do_uninstall() {
         $SUDO_CMD /etc/init.d/td-agent stop
     fi
     log info "Removing packages"
-    if [ "$OS" = "RedHat" -o "$OS" = "Amazmon" ]; then
+    if [ "$OS" = "RedHat" -o "$OS" = "Amazon" ]; then
         $SUDO_CMD yum remove -y td-agent
     elif [ "$OS" = "Debian" ]; then
         $SUDO_CMD apt-get -y remove td-agent
