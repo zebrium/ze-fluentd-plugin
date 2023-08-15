@@ -435,6 +435,7 @@ function main() {
     log info "Installing fluent-plugin-zebrium_output"
     $SUDO_CMD td-agent-gem install fluent-plugin-systemd fluent-plugin-zebrium_output
 
+#TODO: Verify that this actually needs to be done instead of installing from ruby gem
     log info "Downloading zebrium-fluentd package"
     $DL_CMD https://github.com/zebrium/ze-fluentd-plugin/releases/download/1.42.0/zebrium-fluentd-1.18.0.tgz
     log info "Installing zebrium-fluentd"
