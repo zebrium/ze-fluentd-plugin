@@ -27,7 +27,7 @@ jobs:
         run: |
           apt-get update
           apt-get install -y git
-        if: ${{ contains(fromJson('["debian", "ubuntu"]'), matrix.os )}}
+        if: ${{ contains('ubuntu', matrix.os ) || contains('debian', matrix.os ) }}
       - uses: actions/checkout@v3
       - run: git config --system --add safe.directory $GITHUB_WORKSPACE
       - run: ./install_collector.sh
