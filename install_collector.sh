@@ -1,12 +1,12 @@
 #!/bin/bash
-# (C) Zebrium, Inc. 2022
+# (C) Sciencelogic, Inc. 2023
 # All rights reserved
 # Licensed under Simplified BSD License (see LICENSE)
 # Zebrium Log Collector installation script: install and set up the log collector.
 
 set -e
 LOG_FILE="/tmp/zlog-collector-install.log.$$"
-VERSION=1.49.3
+VERSION=1.50.0
 
 PROG=${0##*/}
 
@@ -118,7 +118,6 @@ $SYSTEMD_INCLUDE
   ze_log_collector_token "$ZE_LOG_COLLECTOR_TOKEN"
   ze_log_collector_type "linux"
   ze_host_tags "$ZE_HOST_TAGS"
-  @log_level "info"
   <buffer tag>
     @type file
     path /var/log/td-agent/buffer/out_zebrium.*.buffer
@@ -239,9 +238,9 @@ function print_debug_info() {
     if [ -f /etc/issue ]; then
         echo "cat /etc/issue"
         cat /etc/issue
-     else
+    else
         echo "/etc/issue does not exist"
-     fi
+    fi
 }
 
 function main() {

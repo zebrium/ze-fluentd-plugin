@@ -1,0 +1,26 @@
+name: test
+
+on: 
+  pull_request:
+
+permissions: 
+  contents: read
+
+jobs: 
+  test-install: 
+    strategy:
+      matrix:
+        os:
+          - ubuntu:jammy
+          - ubuntu:focal
+          - ubuntu:bionic
+          - ubuntu:xenial
+          - debian:bullseye
+          - debian:buster
+    runs-on: ubuntu-latest
+    container: 
+      image: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - run: git config --system --add safe.directory $GITHUB_WORKSPACE
+      - run: ./install_collector.sh

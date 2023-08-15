@@ -1,5 +1,5 @@
 #!/bin/bash
-
+# (C) Sciencelogic, Inc. 2023
 # This script monitors docker containers and create symbolic links to log
 # files of all running containers. This will help Fluentd to monitor all
 # container logs from single directory.
