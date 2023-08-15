@@ -23,11 +23,11 @@ jobs:
     container: 
       image: ${{ matrix.os }}
     steps:
-      - name: Install git apt
+      - name: Install Dependencies Ubuntu
+        if: ${{ contains( matrix.os, 'ubuntu') || contains(matrix.os, 'debian' ) }}
         run: |
           apt-get update
           apt-get install -y git
-        if: ${{ contains('ubuntu', matrix.os ) || contains('debian', matrix.os ) }}
       - uses: actions/checkout@v3
       - run: git config --system --add safe.directory $GITHUB_WORKSPACE
       - run: ./install_collector.sh
