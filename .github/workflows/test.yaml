@@ -11,6 +11,7 @@ permissions:
 jobs: 
   test-install: 
     strategy:
+      fail-fast: false
       matrix:
         os:
           - ubuntu:jammy
@@ -22,6 +23,9 @@ jobs:
     runs-on: ubuntu-latest
     container: 
       image: ${{ matrix.os }}
+    env:
+      ZE_LOG_COLLECTOR_URL: 'https://cloud.zebrium.com'
+      ZE_LOG_COLLECTOR_TOKEN: 'test-token'
     steps:
       - name: Install Dependencies Ubuntu
         if: ${{ contains( matrix.os, 'ubuntu') || contains(matrix.os, 'debian' ) }}
@@ -30,4 +34,4 @@ jobs:
           apt-get install -y git
       - uses: actions/checkout@v3
       - run: git config --system --add safe.directory $GITHUB_WORKSPACE
-      - run: ./install_collector.sh
+      - run: ./install_collector.sh 
