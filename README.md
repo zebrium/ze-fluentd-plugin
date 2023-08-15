@@ -1,13 +1,16 @@
 # LINUX COLLECTOR DETAILS
+
 Zebrium's fluentd output plugin sends the logs you collect with Fluentd on Linux to Zebrium for automated Anomaly detection.
 Our github repository is located [here](https://github.com/zebrium/ze-fluentd-plugin).
 
-For instructions on deploying our fluentd collector for Docker environmens, please see Docker setup [here](https://docs.zebrium.com/docs/setup/docker)
+For instructions on deploying our fluentd collector for Docker environments, please see Docker setup [here](https://docs.zebrium.com/docs/setup/docker)
 
 # ze-fluentd-plugin
 
 ## System Requirements
+
 The following OS distributions are supported:
+
 1. Ubuntu 16.04/18.04/20.04
 2. CentOS/RHEL 7/8
 3. Amazon Linux 2
@@ -20,24 +23,31 @@ The following OS distributions are supported:
 1. Get Zebrium API server URL and authentication token from [Zebrium](https://www.zebrium.com).
 2. Determine what deployment name to use.
 3. Run the following command in a shell on host:
+
    ```
    curl https://raw.githubusercontent.com/zebrium/ze-fluentd-plugin/master/install_collector.sh | ZE_LOG_COLLECTOR_URL=<ZAPI_URL> ZE_LOG_COLLECTOR_TOKEN=<AUTH_TOKEN> ZE_HOST_TAGS="ze_deployment_name=<deployment_name>" /bin/bash
    ```
+
    The default system log file paths are defined by the ZE_LOG_PATHS environment variable. Its default value is
+
    ```
    "/var/log/*.log,/var/log/syslog,/var/log/messages,/var/log/secure"
    ```
+
    The ZE_USER_LOG_PATHS environment variable can be used to add more user specific log file paths. For example, to add app log files at `/app1/log/app1.log` and `/app2/log/\*.log`, you can set ZE_USER_LOG_PATHS to:
+
    ```
    "/app1/log/app1.log,/app2/log/*.log"
    ```
 
 ## Upgrading
+
 The upgrade command is similar to the installation command:
 
 ```
 curl https://raw.githubusercontent.com/zebrium/ze-fluentd-plugin/master/install_collector.sh | ZE_LOG_COLLECTOR_URL=<ZAPI_URL> ZE_LOG_COLLECTOR_TOKEN=<AUTH_TOKEN> ZE_HOST_TAGS="ze_deployment_name=<deployment_name>" OVERWRITE_CONFIG=1 /bin/bash
 ```
+
 Please note setting `OVERWRITE_CONFIG` to 1 will cause `/etc/td-agent/td-agent.conf` to be upgraded to latest version.
 
 ## Uninstalling
@@ -49,11 +59,15 @@ curl https://raw.githubusercontent.com/zebrium/ze-fluentd-plugin/master/install_
 ## Installing on Hosts with Existing td-agent Configuration
 
 It is possible to add Zebrium output plugin on a host with existing td-agent configuration without running Zebrium log collector installer.  Zebrium output plugin is provided through RubyGems [here](https://rubygems.org/gems/fluent-plugin-zebrium_output)
+
 1. Run the following command:
+
    ```
    sudo td-agent-gem install fluent-plugin-zebrium_output
    ```
+
 3. Add Zebrium output configuration to `/etc/td-agent/td-agent.conf`. Below is an example configuration which duplicates log messages and sends one copy to Zebrium.
+
    ```
    <match **>
      @type copy
@@ -79,6 +93,7 @@ It is possible to add Zebrium output plugin on a host with existing td-agent con
    ```
 
 ## Configuration
+
 The configuration file for td-agent is at `/etc/td-agent/td-agent.conf`.
 The following parameters must be configured for your instance:
 <table>
@@ -115,7 +130,7 @@ The following parameters must be configured for your instance:
   <tr>
     <td>ze_forward_tag</td>
     <td>Tag to specify log-forwarded sources</td>
-    <td>This parameter is optional. It can be used to indicate sources that are being used for remote log forwarding, by specifying a specific fluentd "tag" to one or more sources.  The default tag value is "ze_forwarded_logs".</td> 
+    <td>This parameter is optional. It can be used to indicate sources that are being used for remote log forwarding, by specifying a specific fluentd "tag" to one or more sources.  The default tag value is "ze_forwarded_logs".</td>
   </tr>
     <tr>
       <td>ze_path_map_file</td>
@@ -125,7 +140,9 @@ The following parameters must be configured for your instance:
 </table>
 
 ### User Log Paths
+
 User log paths can be configured via `/etc/td-agent/log-file-map.conf`. During log collector service startup, if `/etc/td-agent/log-file-map.conf` exists, log collector service script writes log paths defined in `/etc/td-agent/log-file-map.conf` to `/etc/td-agent/conf.d/user.conf`. Please note any user log paths configured at installation time via ZE_USER_LOG_PATHS must be added to `/etc/td-agent/log-file-map.conf` to avoid being overwritten.
+
 ```
 {
   "mappings": [
@@ -144,14 +161,19 @@ User log paths can be configured via `/etc/td-agent/log-file-map.conf`. During l
   ]
 }
 ```
+
 ### Filtering Specific Log Events
+
 If you wish to exclude certain sensitive or noisy events from being sent to Zebrium, you can filter them at the source collection point by doing the following:
 
 1. Add the following in /etc/td-agent/td-agent.conf after other "@include":
+
    ```
    @include conf.d/log_msg_filters.conf
    ```
+
 2. Create a config file /etc/td-agent/conf.d/log_msg_filters.conf containing:
+
    ```
    <filter TAG_FOR_LOG_FILE>
      @type grep
@@ -161,6 +183,7 @@ If you wish to exclude certain sensitive or noisy events from being sent to Zebr
    </exclude>
    </filter>
    ```
+
 3. Restart td-agent: sudo systemctl restart td-agent
 
 **Example**
@@ -178,12 +201,15 @@ In this example, the Fluentd tag for file is node.logs.<FILE_NAME_REPLACE_/_WITH
   </exclude>
 </filter>
 ```
+
 ### Log Path Mapping
+
 Log path mapping allows semantic information (ids, configs and tags) to be extracted from log paths
 and passed to the Zebrium backend. For example, log-file specific host information or business-related
 tags that are embedded in the path of the log file can be extracted..
 
 Log path mapping is configured using a JSON file, with format:
+
 ```
 {
   "mappings": {
@@ -202,19 +228,30 @@ Log path mapping is configured using a JSON file, with format:
   }
 }
 ```
+
 Set "patterns" to regular expressions to match the log file path. Each regex named capture in a matching regular expression will be compared to the "tags", "ids" and "configs" sections and added to the corresponding record section(s).
 Use the ze_path_map_file configuration parameter to specify the path to the JSON file.
+
 ### Environment Variables
+
 If the environment is using a proxy server to access the Internet then standard variables (e.g. http\_proxy) should be configured prior to installation. Please see below at "Operation with a Proxy Server".
+
 ## Usage
+
 ### Start/stop Fluentd
+
 Fluentd agent can be started or stopped with the command:
+
 ```
 sudo systemctl <start | stop> td-agent
 ```
+
 ## Testing your installation
+
 Once the collector has been deployed in your environment, your logs and anomaly detection will be available in the Zebrium UI.
+
 ## Troubleshooting
+
 In the event that Zebrium requires the collector logs for troubleshooting, logs are located here:
 
 1. Collector installation log:  `/tmp/zlog-collector-install.log.*`
@@ -224,7 +261,9 @@ In the event that Zebrium requires the collector logs for troubleshooting, logs 
 In case of an HTTP connection error, please check the spelling of the Zebrium host URL. Also check that any network proxy servers are configured appropriately.
 
 Please contact Zebrium at <support@zebrium.com> if you need any assistance.
+
 ## Operation with a Proxy Server
+
 If the agent environment requires a non-transparent proxy server to be configured this should be done at two points:
 
 * The standard http\_proxy and https\_proxy environment variables must be set in the local environment when the installer is run. This allows the installer to access the Internet to download necessary components.
@@ -232,11 +271,13 @@ If the agent environment requires a non-transparent proxy server to be configure
 * After installation is run the system service also needs to have the same environment variables available. This allows the Zebrium agent to communicate with the log host to send logs.
 
 ### Setting proxy server in a systemd environment
+
 If the agent service is run from systemd and a proxy server is in use, the service needs to have the appropriate proxy configuration added to systemd. (This may not be needed if your system is already configured so that all systemd services globally use a proxy.) To do this, after the installation is performed edit the file /etc/systemd/service/td-agent.service.d/override.conf to add environment configuration lines for the proxy server, for example:
 
 ```
 Environment=http_proxy=myproxy.example.com:8080
 ```
+
 After this is done the systemd daemon should be reloaded, and then the service started:
 
 ```
@@ -244,7 +285,9 @@ sudo systemctl daemon-reload
 
 sudo systemctl restart td-agent
 ```
+
 ## Contributors
+
 * Brady Zuo (Zebrium)
 * Rob Fair (Zebrium)
 * Braeden Earp (Zebrium)
