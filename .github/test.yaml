@@ -2,7 +2,7 @@ name: test
 
 on: 
   pull_request:
-
+  branch: [2-installer-no-longer-installing-on-linux]
 permissions: 
   contents: read
 
