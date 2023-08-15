@@ -30,8 +30,8 @@ jobs:
       - name: Install Dependencies Ubuntu
         if: ${{ contains( matrix.os, 'ubuntu') || contains(matrix.os, 'debian' ) }}
         run: |
-          apt-get update
-          apt-get install -y git curl
+          apt-get -qq update
+          apt-get -qq install -y git curl
       - uses: actions/checkout@v3
       - run: git config --system --add safe.directory $GITHUB_WORKSPACE
       - run: ./install_collector.sh 

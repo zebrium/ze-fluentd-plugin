@@ -396,9 +396,15 @@ function main() {
             CODE_NAME=`lsb_release -c | awk '{ print $2 }'`
         else
             RELEASE_VERS=`head -1 /etc/issue | awk '{ print $3 }'`
-            if [ "$RELEASE_VERS" == "8" ]; then
-                CODE_NAME="jessie"
-            fi
+            case "$RELEASE_VERS" in
+                11)
+                    CODE_NAME="bullseye" ;;
+                10) 
+                    CODE_NAME="buster";;
+                *) 
+                    log info "Your OS or distribution are not supported by this install script."
+                    exit; ;;
+            esac
         fi
         if [ "$CODE_NAME" == "focal" ]; then
             log info "Ubuntu 20.04 (focal) detected, use compatible software from bionic."
@@ -418,7 +424,7 @@ function main() {
         fi
 
         log info "Installing package dependencies"
-        log debug "Flavor of package: ${FLAVOR_STR} and code name: ${CODE_NAME} detected"
+        log info "Flavor of package: ${FLAVOR_STR} and code name: ${CODE_NAME} detected"
         
         $SUDO_CMD apt-get -qq update || log info "'apt-get update' failed."
         $SUDO_CMD apt-get -qq install -y build-essential ruby-dev
