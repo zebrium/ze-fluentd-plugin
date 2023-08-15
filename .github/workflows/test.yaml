@@ -31,7 +31,7 @@ jobs:
         if: ${{ contains( matrix.os, 'ubuntu') || contains(matrix.os, 'debian' ) }}
         run: |
           apt-get -qq update
-          apt-get -qq install -y git curl lsb-release
+          apt-get -qq install -y git curl lsb-release sudo
       - uses: actions/checkout@v3
       - run: git config --system --add safe.directory $GITHUB_WORKSPACE
       - run: ./install_collector.sh 
