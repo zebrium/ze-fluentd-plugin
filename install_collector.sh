@@ -241,6 +241,12 @@ function print_debug_info() {
     else
         echo "/etc/issue does not exist"
     fi
+    if which lsb_release > /dev/null 2>&1; then
+        echo "lsb_release -c"
+        lsb_release -c | awk '{ print $2 }'
+    else 
+        echo "lsb_release command not found"
+    fi
 }
 
 function main() {
@@ -405,10 +411,6 @@ function main() {
                     log info "Your OS or distribution are not supported by this install script."
                     exit; ;;
             esac
-        fi
-        if [ "$CODE_NAME" == "focal" ]; then
-            log info "Ubuntu 20.04 (focal) detected, use compatible software from bionic."
-            CODE_NAME=bionic
         fi
         if [ "$CODE_NAME" == "tricia" -o "$CODE_NAME" == "tina" -o "$CODE_NAME" == "tessa" -o "$CODE_NAME" == "tara" ]; then
             CODE_NAME="bionic"
