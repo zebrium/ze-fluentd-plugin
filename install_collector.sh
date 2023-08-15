@@ -408,8 +408,7 @@ function main() {
                 10) 
                     CODE_NAME="buster";;
                 *) 
-                    log info "Your OS or distribution are not supported by this install script."
-                    exit; ;;
+                    err_exit "Your OS or distribution is not supported by this install script." ;;
             esac
         fi
         if [ "$CODE_NAME" == "tricia" -o "$CODE_NAME" == "tina" -o "$CODE_NAME" == "tessa" -o "$CODE_NAME" == "tara" ]; then
@@ -434,8 +433,7 @@ function main() {
         log info "Installing log collector dependencies from https://toolbelt.treasuredata.com/sh/install-${FLAVOR_STR}-${CODE_NAME}-td-agent4.sh" 
         download_and_run_installer https://toolbelt.treasuredata.com/sh/install-${FLAVOR_STR}-${CODE_NAME}-td-agent4.sh
     else
-        log info "Your OS or distribution are not supported by this install script."
-        exit;
+        err_exit info "Your OS or distribution is not supported by this install script."
     fi
 
     log info "Installing fluent-plugin-systemd"

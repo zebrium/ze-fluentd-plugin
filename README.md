@@ -1,7 +1,7 @@
 # LINUX COLLECTOR DETAILS
 
 Zebrium's fluentd output plugin sends the logs you collect with Fluentd on Linux to Zebrium for automated Anomaly detection.
-Our github repository is located [here](https://github.com/zebrium/ze-fluentd-plugin).
+Our github repository is located [here](https://github.com/zebrium/ze-fluentd-plugin).  Distribution of Zebrium's fluentd output plugin is coupled with the packaging of fluentd.  We leverage Version 4 of td-agent, and thus are limited to the installation platforms that are supported by the Treasure Agent.  For more information, see the [documentation](https://www.fluentd.org/download/td_agent)
 
 For instructions on deploying our fluentd collector for Docker environments, please see Docker setup [here](https://docs.zebrium.com/docs/setup/docker)
 
@@ -11,8 +11,15 @@ For instructions on deploying our fluentd collector for Docker environments, ple
 
 The following OS distributions are supported:
 
-1. Ubuntu 16.04/18.04/20.04
-2. CentOS/RHEL 7/8
+DEB Packages:
+
+1. Ubuntu: Jammy, Focal, Bionix, Xenial
+2. Debian: Bullseye, Buster
+
+RPM Package:
+
+1. CentOS/RHEL 7/8/9
+2. Oracle Linux 7/8
 3. Amazon Linux 2
 
 ## Getting Started
@@ -285,9 +292,3 @@ sudo systemctl daemon-reload
 
 sudo systemctl restart td-agent
 ```
-
-## Contributors
-
-* Brady Zuo (Zebrium)
-* Rob Fair (Zebrium)
-* Braeden Earp (Zebrium)
