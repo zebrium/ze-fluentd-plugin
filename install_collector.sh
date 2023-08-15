@@ -6,7 +6,7 @@
 
 set -e
 LOG_FILE="/tmp/zlog-collector-install.log.$$"
-VERSION=1.50.0
+VERSION=1.51.0
 
 PROG=${0##*/}
 
@@ -286,12 +286,15 @@ function main() {
         OP="upgrade"
     fi
 
+    # Determine which download command to use for retrieval
     if [ $(command -v curl) ]; then
         DL_CMD="curl --connect-timeout 30 --retry 3 --retry-delay 5 -O -L -f"
         DL_SH_CMD="curl --connect-timeout 30 --retry 3 --retry-delay 5 -q -L"
-    else
+    elif [ $(wget -v curl) ]; then
         DL_CMD="wget --quiet --dns-timeout=30 --connect-timeout=30"
         DL_SH_CMD="wget --dns-timeout=30 --connect-timeout=30 -qO-"
+    else 
+        err_exit "Neither curl nor wget found. Please install one of them and try again."
     fi
 
     OVERWRITE_CONFIG=${OVERWRITE_CONFIG:-0}
@@ -364,7 +367,7 @@ function main() {
         TD_AGENT_INSTALLED=$(yum list installed td-agent > /dev/null 2>&1 || echo "no")
         if [ "$TD_AGENT_INSTALLED" == "no" ]; then
             log info "Installing log collector dependencies"
-            $SUDO_CMD yum -y install gcc make ruby-devel rubygems
+            $SUDO_CMD yum -y -q install gcc make ruby-devel rubygems
 
             # treasuredata releases are '7', '8' etc but releasever added by installed may not match
             SH_FILE=install-redhat-td-agent4.sh
@@ -414,11 +417,13 @@ function main() {
             FLAVOR_STR="debian"
         fi
 
-        log info "Installing package dependies"
-        $SUDO_CMD apt-get update || log info "'apt-get update' failed."
-        $SUDO_CMD apt-get install -y build-essential ruby-dev
+        log info "Installing package dependencies"
+        log debug "Flavor of package: ${FLAVOR_STR} and code name: ${CODE_NAME} detected"
+        
+        $SUDO_CMD apt-get -qq update || log info "'apt-get update' failed."
+        $SUDO_CMD apt-get -qq install -y build-essential ruby-dev
 
-        log info "Installing log collector dependencies"
+        log info "Installing log collector dependencies from https://toolbelt.treasuredata.com/sh/install-${FLAVOR_STR}-${CODE_NAME}-td-agent4.sh" 
         download_and_run_installer https://toolbelt.treasuredata.com/sh/install-${FLAVOR_STR}-${CODE_NAME}-td-agent4.sh
     else
         log info "Your OS or distribution are not supported by this install script."
