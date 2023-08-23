@@ -1,8 +1,6 @@
 name: test
 
 on:   
-  push:  
-    branches: [2-installer-no-longer-installing-on-linux]
   pull_request:
     
 permissions: 
