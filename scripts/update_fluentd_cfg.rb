@@ -1,5 +1,5 @@
 #!/opt/td-agent/embedded/bin/ruby
-
+# (C) Sciencelogic, Inc. 2023
 require 'json'
 require 'logger'
 

@@ -1,12 +1,12 @@
 #!/bin/bash
-# (C) Zebrium, Inc. 2019
+# (C) Sciencelogic, Inc. 2023
 # All rights reserved
 # Licensed under Simplified BSD License (see LICENSE)
 # Zebrium Log Collector installation script: install and set up the log collector.
 
 set -e
 LOG_FILE="/tmp/zlog-collector-install.log.$$"
-VERSION=1.49.3
+VERSION=1.51.0
 
 PROG=${0##*/}
 
@@ -39,7 +39,7 @@ function cleanup() {
 function on_error() {
     print_debug_info
     printf "\033[31m$ERROR_MESSAGE
-It looks like you hit an issue when trying to install zebrium log collector.
+It looks like you hit an issue when trying to install the zebrium log collector.
 
 Please send an email to support@zebrium.com with the contents of $LOG_FILE
 and we'll do our very best to help you solve your problem.\n\033[0m\n"
@@ -49,7 +49,11 @@ and we'll do our very best to help you solve your problem.\n\033[0m\n"
 function update_td_agent_service_file() {
     if ! grep -q 'ExecStartPre=' /lib/systemd/system/td-agent.service; then
         log info "Add ExecStartPre script for td-agent service"
-        $SUDO_CMD sed -i '/^ExecStart=.*/i ExecStartPre=/opt/zebrium/bin/update_fluentd_cfg.rb' /lib/systemd/system/td-agent.service
+        $SUDO_CMD sed -i '/^ExecStart=.*/i ExecStartPre=/opt/td-agent/bin/ruby /opt/zebrium/bin/update_fluentd_cfg.rb' /lib/systemd/system/td-agent.service
+    fi
+    if grep -q 'Environment=LD_PRELOAD=/opt/td-agent/lib/libjemalloc.so' /lib/systemd/system/td-agent.service; then
+        log info "Disabling Malloc as a temp solution to memory leak crash"
+        $SUDO_CMD sed -i 's/^Environment=LD_PRELOAD=\/opt\/td-agent\/lib\/libjemalloc.so/#Environment=LD_PRELOAD=\/opt\/td-agent\/lib\/libjemalloc.so/' /lib/systemd/system/td-agent.service
     fi
 }
 
@@ -118,7 +122,6 @@ $SYSTEMD_INCLUDE
   ze_log_collector_token "$ZE_LOG_COLLECTOR_TOKEN"
   ze_log_collector_type "linux"
   ze_host_tags "$ZE_HOST_TAGS"
-  @log_level "info"
   <buffer tag>
     @type file
     path /var/log/td-agent/buffer/out_zebrium.*.buffer
@@ -148,7 +151,7 @@ EOF
     cat << EOF > $CONTAINERS_CONF_FILE
 <source>
   @type tail
-  path "/var/lib/zebrium/container_logs/*.log"
+  path "/var/log/zebrium/container_logs/*.log"
   path_key tailed_path
   pos_file /var/log/td-agent/containers_logs.pos
   read_from_head true
@@ -222,7 +225,7 @@ function download_and_run_installer() {
 }
 
 function print_debug_info() {
-    echo "Installer versoin $VERSION"
+    echo "Installer version $VERSION"
     echo ""
     echo "OS information:"
     echo "uname -a"
@@ -239,9 +242,15 @@ function print_debug_info() {
     if [ -f /etc/issue ]; then
         echo "cat /etc/issue"
         cat /etc/issue
-     else
+    else
         echo "/etc/issue does not exist"
-     fi
+    fi
+    if which lsb_release > /dev/null 2>&1; then
+        echo "lsb_release -c"
+        lsb_release -c | awk '{ print $2 }'
+    else 
+        echo "lsb_release command not found"
+    fi
 }
 
 function main() {
@@ -287,12 +296,15 @@ function main() {
         OP="upgrade"
     fi
 
+    # Determine which download command to use for retrieval
     if [ $(command -v curl) ]; then
         DL_CMD="curl --connect-timeout 30 --retry 3 --retry-delay 5 -O -L -f"
         DL_SH_CMD="curl --connect-timeout 30 --retry 3 --retry-delay 5 -q -L"
-    else
+    elif [ $(wget -v curl) ]; then
         DL_CMD="wget --quiet --dns-timeout=30 --connect-timeout=30"
         DL_SH_CMD="wget --dns-timeout=30 --connect-timeout=30 -qO-"
+    else 
+        err_exit "Neither curl nor wget found. Please install one of them and try again."
     fi
 
     OVERWRITE_CONFIG=${OVERWRITE_CONFIG:-0}
@@ -300,12 +312,14 @@ function main() {
 
     # OS/Distro Detection
     # Try lsb_release, fallback with /etc/issue then uname command
-    KNOWN_DISTRIBUTION="(Debian|Ubuntu|Red Hat|RedHat|REDHAT|CentOS|Amazon)"
+    KNOWN_DISTRIBUTION="(Debian|Ubuntu|Red Hat|RedHat|REDHAT|CentOS|Amazon|Oracle Linux)"
     DISTRIBUTION=$(lsb_release -d 2>/dev/null | grep -Eo "$KNOWN_DISTRIBUTION"  || grep -Eo "$KNOWN_DISTRIBUTION" /etc/issue 2>/dev/null || grep -Eo "$KNOWN_DISTRIBUTION" /etc/Eos-release 2>/dev/null || grep -m1 -Eo "$KNOWN_DISTRIBUTION" /etc/os-release 2>/dev/null || uname -s)
     if [ "$DISTRIBUTION" = "REDHAT" -o "$DISTRIBUTION" = "Red Hat" ]; then
         DISTRIBUTION=RedHat
     fi
-
+    if [ "$DISTRIBUTION" = "Oracle Linux" ]; then
+        DISTRIBUTION=RedHat
+    fi
     if [ $DISTRIBUTION = "Darwin" ]; then
         err_exit "Mac is not supported."
     elif [ -f /etc/debian_version -o "$DISTRIBUTION" == "Debian" -o "$DISTRIBUTION" == "Ubuntu" -o "$DISTRIBUTION" == "Linux" ]; then
@@ -318,7 +332,7 @@ function main() {
 
     # Root user detection
     if [ $(echo "$UID") = "0" -o "$SUDO_DISABLED" = "1" ]; then
-        log info "SUDO_DISABLED is set to 1"
+        log info "SUDO_DISABLED is set to 1, must be running as the root user"
         SUDO_CMD=''
     else
         SUDO_CMD='sudo'
@@ -364,11 +378,8 @@ function main() {
         fi
         TD_AGENT_INSTALLED=$(yum list installed td-agent > /dev/null 2>&1 || echo "no")
         if [ "$TD_AGENT_INSTALLED" == "no" ]; then
-            log info "Installing log collector dependencies"
-            $SUDO_CMD yum -y install gcc make ruby-devel rubygems
-
             # treasuredata releases are '7', '8' etc but releasever added by installed may not match
-            SH_FILE=install-redhat-td-agent3.sh
+            SH_FILE=install-redhat-td-agent4.sh
             download_installer https://toolbelt.treasuredata.com/sh/$SH_FILE
             MAJOR_VERS=`echo $MAJOR_VERS | sed 's/\..*//'`
             sed -i -e "s/\\\\\$releasever/$MAJOR_VERS/" $SH_FILE
@@ -383,24 +394,23 @@ function main() {
         TD_AGENT_INSTALLED=$(yum list installed td-agent > /dev/null 2>&1 || echo "no")
         AMZN_VERS=`uname -r | egrep -o  'amzn[[:digit:]]+' | sed 's/amzn//'`
         if [ "$TD_AGENT_INSTALLED" == "no" ]; then
-            log info "Installing log collector dependencies"
-            $SUDO_CMD yum -y install gcc ruby-devel rubygems
-            download_and_run_installer https://toolbelt.treasuredata.com/sh/install-amazon${AMZN_VERS}-td-agent3.sh
+            download_and_run_installer https://toolbelt.treasuredata.com/sh/install-amazon${AMZN_VERS}-td-agent4.sh
         fi
     elif [ $OS = "Debian" ]; then
         DEFAULTS_DIR=/etc/default
-        IS_UBUNTU=`uname -a  | grep -i Ubuntu | wc -l`
+        IS_UBUNTU=`cat /etc/os-release | grep -i Ubuntu | wc -l`
         if which lsb_release > /dev/null 2>&1; then
             CODE_NAME=`lsb_release -c | awk '{ print $2 }'`
         else
             RELEASE_VERS=`head -1 /etc/issue | awk '{ print $3 }'`
-            if [ "$RELEASE_VERS" == "8" ]; then
-                CODE_NAME="jessie"
-            fi
-        fi
-        if [ "$CODE_NAME" == "focal" ]; then
-            log info "Ubuntu 20.04 (focal) detected, use compatible software from bionic."
-            CODE_NAME=bionic
+            case "$RELEASE_VERS" in
+                11)
+                    CODE_NAME="bullseye" ;;
+                10) 
+                    CODE_NAME="buster";;
+                *) 
+                    err_exit "Your OS or distribution is not supported by this install script." ;;
+            esac
         fi
         if [ "$CODE_NAME" == "tricia" -o "$CODE_NAME" == "tina" -o "$CODE_NAME" == "tessa" -o "$CODE_NAME" == "tara" ]; then
             CODE_NAME="bionic"
@@ -414,16 +424,16 @@ function main() {
         else
             FLAVOR_STR="debian"
         fi
-
-        log info "Installing package dependies"
-        $SUDO_CMD apt-get update || log info "'apt-get update' failed."
-        $SUDO_CMD apt-get install -y build-essential ruby-dev
-
-        log info "Installing log collector dependencies"
-        download_and_run_installer https://toolbelt.treasuredata.com/sh/install-${FLAVOR_STR}-${CODE_NAME}-td-agent3.sh
+        log info "Flavor of package: ${FLAVOR_STR} and code name: ${CODE_NAME} detected"
+        
+        log info "Installing log collector from https://toolbelt.treasuredata.com/sh/install-${FLAVOR_STR}-${CODE_NAME}-td-agent4.sh" 
+        download_and_run_installer https://toolbelt.treasuredata.com/sh/install-${FLAVOR_STR}-${CODE_NAME}-td-agent4.sh
     else
-        log info "Your OS or distribution are not supported by this install script."
-        exit;
+        err_exit info "Your OS or distribution is not supported by this install script."
+    fi
+
+    if ! command -v td-agent &> /dev/null; then
+        err_exit "td-agent installation failed"
     fi
 
     log info "Installing fluent-plugin-systemd"
@@ -433,15 +443,16 @@ function main() {
     log info "Uninstalling fluent-plugin-zebrium_output"
     $SUDO_CMD td-agent-gem uninstall fluent-plugin-zebrium_output
 
-    log info "Downloading fluent-plugin-zebrium_output"
-    $DL_CMD https://github.com/zebrium/ze-fluentd-plugin/releases/download/1.49.3/fluent-plugin-zebrium_output-1.49.3.gem
     log info "Installing fluent-plugin-zebrium_output"
     $SUDO_CMD td-agent-gem install fluent-plugin-systemd fluent-plugin-zebrium_output
 
     log info "Downloading zebrium-fluentd package"
-    $DL_CMD https://github.com/zebrium/ze-fluentd-plugin/releases/download/1.42.0/zebrium-fluentd-1.18.0.tgz
+    $DL_CMD https://github.com/zebrium/ze-fluentd-plugin/releases/latest/download/zebrium-fluentd.tar.gz
     log info "Installing zebrium-fluentd"
-    $SUDO_CMD tar -C /opt -xf zebrium-fluentd-1.18.0.tgz
+    $SUDO_CMD tar -C /opt -xf zebrium-fluentd.tar.gz
+    log info "Cleaning up zebrium-fluentd package"
+    $SUDO_CMD rm zebrium-fluentd.tar.gz
+
 
     TD_DEFAULT_FILE=$DEFAULTS_DIR/td-agent
     if [ ! -e $TD_DEFAULT_FILE ]; then

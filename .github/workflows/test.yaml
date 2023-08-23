@@ -1,0 +1,48 @@
+name: test
+
+on:   
+  pull_request:
+    
+permissions: 
+  contents: read
+
+jobs: 
+  test-install: 
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu:jammy
+          - ubuntu:focal
+          - ubuntu:bionic
+          - debian:bullseye
+          - debian:buster
+          - oraclelinux:9
+          - oraclelinux:8
+          - oraclelinux:7
+    runs-on: ubuntu-latest
+    container: 
+      image: ${{ matrix.os }}
+    env:
+      ZE_LOG_COLLECTOR_URL: 'https://cloud.zebrium.com'
+      ZE_LOG_COLLECTOR_TOKEN: 'test-token'
+      START_SERVICES: 0
+    steps:
+      - name: Install Dependencies Ubuntu
+        if: ${{ contains( matrix.os, 'ubuntu') || contains(matrix.os, 'debian' ) }}
+        run: |
+          apt-get -qq update
+          apt-get -qq install -y git curl lsb-release sudo
+      - name: Install Dependencies Ubuntu Xenial
+        if: ${{ contains( matrix.os, 'xenial')  }}
+        run: |
+          apt-get -qq update
+          apt-get -qq install -y apt-transport-https
+      - name: Install Dependencies RPM
+        if: ${{ contains( matrix.os, 'oracle') || contains(matrix.os, 'redhat' ) }}
+        run: |
+          yum -q update -y
+          yum -q install -y git sudo
+      - uses: actions/checkout@v3
+      - run: git config --system --add safe.directory $GITHUB_WORKSPACE
+      - run: ./install_collector.sh 
