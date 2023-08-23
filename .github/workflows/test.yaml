@@ -41,6 +41,7 @@ jobs:
         run: |
           apt-get -qq update
           apt-get -qq install -y apt-transport-https
+          /etc/init.d/dbus start
       - name: Install Dependencies RPM
         if: ${{ contains( matrix.os, 'oracle') || contains(matrix.os, 'redhat' ) }}
         run: |
