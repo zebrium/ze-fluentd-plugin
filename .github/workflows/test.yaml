@@ -41,7 +41,6 @@ jobs:
       - name: Install Dependencies RPM
         if: ${{ contains( matrix.os, 'oracle') || contains(matrix.os, 'redhat' ) }}
         run: |
-          yum -q update -y && 
           if [ $(command -v curl) ]; then
             yum -q install -y curl
           fi 

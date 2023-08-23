@@ -432,6 +432,10 @@ function main() {
         err_exit info "Your OS or distribution is not supported by this install script."
     fi
 
+    if ! command -v td-agent &> /dev/null; then
+        err_exit "td-agent installation failed"
+    fi
+
     log info "Installing fluent-plugin-systemd"
     $SUDO_CMD td-agent-gem install fluent-plugin-systemd
     log info "Installing docker-api"
