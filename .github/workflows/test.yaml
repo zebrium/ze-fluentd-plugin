@@ -41,8 +41,11 @@ jobs:
       - name: Install Dependencies RPM
         if: ${{ contains( matrix.os, 'oracle') || contains(matrix.os, 'redhat' ) }}
         run: |
-          yum -q update -y
-          yum -q install -y git curl sudo
+          yum -q update -y && 
+          if [ $(command -v curl) ]; then
+            yum -q install -y curl
+          fi 
+          yum -q install -y git sudo
       - uses: actions/checkout@v3
       - run: git config --system --add safe.directory $GITHUB_WORKSPACE
       - run: ./install_collector.sh 
