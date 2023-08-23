@@ -17,7 +17,6 @@ jobs:
           - ubuntu:jammy
           - ubuntu:focal
           - ubuntu:bionic
-          - ubuntu:xenial
           - debian:bullseye
           - debian:buster
           - oraclelinux:9
@@ -41,7 +40,6 @@ jobs:
         run: |
           apt-get -qq update
           apt-get -qq install -y apt-transport-https
-          /etc/init.d/dbus start
       - name: Install Dependencies RPM
         if: ${{ contains( matrix.os, 'oracle') || contains(matrix.os, 'redhat' ) }}
         run: |
