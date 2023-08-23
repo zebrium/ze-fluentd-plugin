@@ -20,18 +20,29 @@ jobs:
           - ubuntu:xenial
           - debian:bullseye
           - debian:buster
+          - oraclelinux:9
+          - oraclelinux:8
+          - oraclelinux:7
+          - redhat/ubi7
+          - redhat/ubi8
+          - redhat/ubi9
     runs-on: ubuntu-latest
     container: 
       image: ${{ matrix.os }}
     env:
       ZE_LOG_COLLECTOR_URL: 'https://cloud.zebrium.com'
       ZE_LOG_COLLECTOR_TOKEN: 'test-token'
+      v: 0
     steps:
       - name: Install Dependencies Ubuntu
         if: ${{ contains( matrix.os, 'ubuntu') || contains(matrix.os, 'debian' ) }}
         run: |
           apt-get -qq update
           apt-get -qq install -y git curl lsb-release sudo
+      - name: Install Dependencies RPM
+        if: ${{ contains( matrix.os, 'oracle') || contains(matrix.os, 'redhat' ) }}
+        run: |
+          dnf -q install -y git curl sudo
       - uses: actions/checkout@v3
       - run: git config --system --add safe.directory $GITHUB_WORKSPACE
       - run: ./install_collector.sh 

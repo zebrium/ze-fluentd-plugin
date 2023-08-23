@@ -1,0 +1,36 @@
+name: Release Installer
+
+on: 
+  push:
+    tags:       
+      - 'v*'
+permissions:
+  contents: write
+  discussions: write
+env: 
+  TAR_FILE_NAME: zebrium-fluentd.tar.gz
+jobs: 
+  package-and-publish: 
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v3
+      - run: git config --system --add safe.directory $GITHUB_WORKSPACE
+      - name: Install Tar
+        run: |
+          apt-get -qq update && apt-get -qq install -y tar
+      - name: Build temp Directory
+        run: |
+          mkdir -p zebrium/bin
+          mkdir -p zebrium/etc
+          cp scripts/zebrium-container-mon.service zebrium/etc
+          cp scripts/zebrium_container_mon.sh zebrium/bin
+          cp scripts/update_fluentd_cfg.rb zebrium/bin
+          tar -zcvf $TAR_FILE_NAME zebrium
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with: 
+          files: |
+            $TAR_FILE_NAME
+            install_collector.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

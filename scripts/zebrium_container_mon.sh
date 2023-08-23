@@ -4,9 +4,30 @@
 # files of all running containers. This will help Fluentd to monitor all
 # container logs from single directory.
 
-. /opt/zebrium/etc/functions
+CONTAINER_LOG_DIR="/var/log/zebrium/container_logs"
 
-CONTAINER_LOG_DIR="/var/lib/zebrium/container_logs"
+date_formatted() {
+    # ISO-8601 timestamp, with milliseconds
+    /bin/date '+%Y-%m-%dT%H:%M:%S.%03N%:z'
+}
+
+# Usage: log {DEBUG|INFO|WARNING|ERROR|CRITICAL} msg
+log() {
+    local ts=$(date_formatted)
+    local severity=$1
+    shift
+
+    printf "%s %5s %-6s %s\n" "${ts}" "$$" "${severity}:" "$@"
+    #echo "${ts} $$ ${severity}: $@"
+    if [ -n "${LOGFILE}" ]; then
+        echo "${ts} $$ ${severity}: $@" >> $LOGFILE
+    fi
+}
+
+log_start() {
+    log INFO "----------------------------------------------"
+    log INFO "Starting $0: $@"
+}
 
 update_log_links() {
     if ! which docker > /dev/null; then
