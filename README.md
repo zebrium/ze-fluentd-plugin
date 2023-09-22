@@ -211,7 +211,18 @@ Log path mapping is configured using a JSON file, with format:
 ```
 ##### Configuring Multiple Zebrium Service Groups Within a Single Collector
 
-It is possible to use a single td-agent to send log files to multiple Zebrium service groups. 
+It is possible to use a single td-agent to send log files to multiple Zebrium service groups. Knowlege about advanced fluentd configuration is required. It is recommended to review the official documentation at https://docs.fluentd.org/configuration/config-file 
+
+The following are required:
+- each service group needs to have its own source block and match block defenitions
+- in each source block, the path should be as specific as possible
+- paths in source blocks should not overlap
+- each source block needs a unique pos_file (td-agent will create the file if it does not exist)
+- each source block should include a unique tag to specify which match block/service group should pick up the log events
+- each match block should match on the tag in its corresponding source block
+- ze_log_collector_url, ze_log_collector_token, and ze_log_collector_type will probably be the same in all match blocks
+- ze_host_tags specifies the service group name with "ze_deployment_name=<service group name>"
+- each match block requires a unique buffer path, which will be created if the specified path does not exist
 
 Here's an example of how this could be configured in /etc/td-agent/td-agent.conf:
 ```
