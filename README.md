@@ -209,6 +209,81 @@ Log path mapping is configured using a JSON file, with format:
   }
 }
 ```
+##### Configuring Multiple Zebrium Service Groups Within a Single Collector
+
+It is possible to use a single td-agent to send log files to multiple Zebrium service groups. Knowlege about advanced fluentd configuration is required. It is recommended to review the official documentation at https://docs.fluentd.org/configuration/config-file 
+
+The following are required:
+- each service group needs to have its own source block and match block defenitions
+- in each source block, the path should be as specific as possible
+- paths in source blocks should not overlap
+- each source block needs a unique pos_file (td-agent will create the file if it does not exist)
+- each source block should include a unique tag to specify which match block/service group should pick up the log events
+- each match block should match on the tag in its corresponding source block
+- ze_log_collector_url, ze_log_collector_token, and ze_log_collector_type will probably be the same in all match blocks
+- ze_host_tags specifies the service group name with "ze_deployment_name=<service group name>"
+- each match block requires a unique buffer path, which will be created if the specified path does not exist
+
+Here's an example of how this could be configured in /etc/td-agent/td-agent.conf:
+```
+<source>
+  @type tail
+  path "/var/log/auth.log"
+  format none
+  path_key tailed_path
+  pos_file /var/log/td-agent/position_file_1.pos
+  tag seamus1
+  read_from_head true
+</source>
+
+<source>
+  @type tail
+  path "/var/log/syslog"
+  format none
+  path_key tailed_path
+  pos_file /var/log/td-agent/position_file_2.pos
+  tag seamus2
+  read_from_head true
+</source>
+
+@include conf.d/user.conf
+@include conf.d/containers.conf
+@include conf.d/systemd.conf
+
+<match seamus1>
+  @type zebrium
+  ze_log_collector_url "https://trial.zebrium.com"
+  ze_log_collector_token "<your token here>"
+  ze_log_collector_type "linux"
+  ze_host_tags "ze_deployment_name=seamusfirstservicegroup"
+  <buffer tag>
+    @type file
+    path /var/log/td-agent/buffer1/out_zebrium.*.buffer
+    chunk_limit_size "1MB"
+    chunk_limit_records "4096"
+    flush_mode "interval"
+    flush_interval "60s"
+  </buffer>
+</match>
+
+<match seamus2>
+  @type zebrium
+  ze_log_collector_url "https://trial.zebrium.com"
+  ze_log_collector_token "<your token here, should be the same as above>"
+  ze_log_collector_type "linux"
+  ze_host_tags "ze_deployment_name=seamussecondservicegroup"
+  <buffer tag>
+    @type file
+    path /var/log/td-agent/buffer2/out_zebrium.*.buffer
+    chunk_limit_size "1MB"
+    chunk_limit_records "4096"
+    flush_mode "interval"
+    flush_interval "60s"
+  </buffer>
+</match>
+```
+
+
 
 Set "patterns" to regular expressions to match the log file path. Each regex named capture in a matching regular expression will be compared to the "tags", "ids" and "configs" sections and added to the corresponding record section(s).
 Use the ze_path_map_file configuration parameter to specify the path to the JSON file.
