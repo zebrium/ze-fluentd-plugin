@@ -58,7 +58,7 @@ function update_td_agent_service_file() {
 }
 
 function create_config() {
-    local MAIN_CONF_FILE=$TEMP_DIR/td-agent.conf
+    local MAIN_CONF_FILE=$TEMP_DIR/fluentd.conf
     local USER_CONF_FILE=$TEMP_DIR/user.conf
     local SYSTEMD_CONF_FILE=$TEMP_DIR/systemd.conf
     local CONTAINERS_CONF_FILE=$TEMP_DIR/containers.conf
@@ -74,7 +74,7 @@ function create_config() {
   path "$JOURNAL_DIR"
   <storage>
     @type local
-    path "/var/log/td-agent/fluentd-journald-cursor.json"
+    path "/var/log/fluentd/fluentd-journald-cursor.json"
   </storage>
   tag journal
   read_from_head true
@@ -107,7 +107,7 @@ EOF
   path "$ZE_LOG_PATHS"
   format none
   path_key tailed_path
-  pos_file /var/log/td-agent/sys_logs.pos
+  pos_file /var/log/fluentd/sys_logs.pos
   tag node.logs.*
   read_from_head true
 </source>
@@ -124,7 +124,7 @@ $SYSTEMD_INCLUDE
   ze_host_tags "$ZE_HOST_TAGS"
   <buffer tag>
     @type file
-    path /var/log/td-agent/buffer/out_zebrium.*.buffer
+    path /var/log/fluentd/buffer/out_zebrium.*.buffer
     chunk_limit_size "1MB"
     chunk_limit_records "4096"
     flush_mode "interval"
@@ -140,7 +140,7 @@ EOF
   @type tail
   path "$ZE_USER_LOG_PATHS"
   path_key tailed_path
-  pos_file /var/log/td-agent/user_logs.pos
+  pos_file /var/log/fluentd/user_logs.pos
   <parse>
     @type none
   </parse>
@@ -153,7 +153,7 @@ EOF
   @type tail
   path "/var/log/zebrium/container_logs/*.log"
   path_key tailed_path
-  pos_file /var/log/td-agent/containers_logs.pos
+  pos_file /var/log/fluentd/containers_logs.pos
   read_from_head true
   tag containers.*
   format json
@@ -162,18 +162,18 @@ EOF
 </source>
 EOF
 
-    $SUDO_CMD mkdir -p /etc/td-agent
-    $SUDO_CMD cp -f $MAIN_CONF_FILE /etc/td-agent/td-agent.conf
-    $SUDO_CMD mkdir -p /etc/td-agent/conf.d
-    $SUDO_CMD cp -f $USER_CONF_FILE /etc/td-agent/conf.d
-    $SUDO_CMD cp -f $CONTAINERS_CONF_FILE /etc/td-agent/conf.d
+    $SUDO_CMD mkdir -p /etc/fluent
+    $SUDO_CMD cp -f $MAIN_CONF_FILE /etc/fluent/fluentd.conf
+    $SUDO_CMD mkdir -p /etc/fluent/conf.d
+    $SUDO_CMD cp -f $USER_CONF_FILE /etc/fluent/conf.d
+    $SUDO_CMD cp -f $CONTAINERS_CONF_FILE /etc/fluentconf.d
     if [ -n "$SYSTEMD_INCLUDE" ]; then
-        $SUDO_CMD cp -f $SYSTEMD_CONF_FILE /etc/td-agent/conf.d
+        $SUDO_CMD cp -f $SYSTEMD_CONF_FILE /etc/fluent/conf.d
     fi
 }
 
 function is_log_collector_installed() {
-    egrep -q '@type[[:space:]]+zebrium' /etc/td-agent/td-agent.conf 2>/dev/null
+    egrep -q '@type[[:space:]]+zebrium' /etc/fluent/fluentd.conf 2>/dev/null
 }
 
 function has_systemd() {
