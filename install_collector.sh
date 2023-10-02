@@ -47,13 +47,13 @@ and we'll do our very best to help you solve your problem.\n\033[0m\n"
 }
 
 function update_td_agent_service_file() {
-    if ! grep -q 'ExecStartPre=' /lib/systemd/system/td-agent.service; then
-        log info "Add ExecStartPre script for td-agent service"
-        $SUDO_CMD sed -i '/^ExecStart=.*/i ExecStartPre=/opt/td-agent/bin/ruby /opt/zebrium/bin/update_fluentd_cfg.rb' /lib/systemd/system/td-agent.service
+    if ! grep -q 'ExecStartPre=' /lib/systemd/system/fluentd.service; then
+        log info "Add ExecStartPre script for fluentd service"
+        $SUDO_CMD sed -i '/^ExecStart=.*/i ExecStartPre=/opt/fluent/bin/ruby /opt/zebrium/bin/update_fluentd_cfg.rb' /lib/systemd/system/fluentd.service
     fi
-    if grep -q 'Environment=LD_PRELOAD=/opt/td-agent/lib/libjemalloc.so' /lib/systemd/system/td-agent.service; then
+    if grep -q 'Environment=LD_PRELOAD=/opt/fluent/lib/libjemalloc.so' /lib/systemd/system/fluentd.service; then
         log info "Disabling Malloc as a temp solution to memory leak crash"
-        $SUDO_CMD sed -i 's/^Environment=LD_PRELOAD=\/opt\/td-agent\/lib\/libjemalloc.so/#Environment=LD_PRELOAD=\/opt\/td-agent\/lib\/libjemalloc.so/' /lib/systemd/system/td-agent.service
+        $SUDO_CMD sed -i 's/^Environment=LD_PRELOAD=\/opt\/fluent\/lib\/libjemalloc.so/#Environment=LD_PRELOAD=\/opt\/fluent\/lib\/libjemalloc.so/' /lib/systemd/system/fluentd.service
     fi
 }
 
