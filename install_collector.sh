@@ -74,7 +74,7 @@ function create_config() {
   path "$JOURNAL_DIR"
   <storage>
     @type local
-    path "/var/log/fluentd/fluentd-journald-cursor.json"
+    path "/var/log/fluent/fluentd-journald-cursor.json"
   </storage>
   tag journal
   read_from_head true
@@ -107,7 +107,7 @@ EOF
   path "$ZE_LOG_PATHS"
   format none
   path_key tailed_path
-  pos_file /var/log/fluentd/sys_logs.pos
+  pos_file /var/log/fluent/sys_logs.pos
   tag node.logs.*
   read_from_head true
 </source>
@@ -124,7 +124,7 @@ $SYSTEMD_INCLUDE
   ze_host_tags "$ZE_HOST_TAGS"
   <buffer tag>
     @type file
-    path /var/log/fluentd/buffer/out_zebrium.*.buffer
+    path /var/log/fluent/buffer/out_zebrium.*.buffer
     chunk_limit_size "1MB"
     chunk_limit_records "4096"
     flush_mode "interval"
@@ -140,7 +140,7 @@ EOF
   @type tail
   path "$ZE_USER_LOG_PATHS"
   path_key tailed_path
-  pos_file /var/log/fluentd/user_logs.pos
+  pos_file /var/log/fluent/user_logs.pos
   <parse>
     @type none
   </parse>
@@ -153,7 +153,7 @@ EOF
   @type tail
   path "/var/log/zebrium/container_logs/*.log"
   path_key tailed_path
-  pos_file /var/log/fluentd/containers_logs.pos
+  pos_file /var/log/fluent/containers_logs.pos
   read_from_head true
   tag containers.*
   format json
