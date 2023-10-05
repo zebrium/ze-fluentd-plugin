@@ -403,10 +403,10 @@ function main() {
         # NEW CHECK: Check if /etc/os-release file exists
         if [ -f /etc/os-release ]; then
             # Use grep to search for specific strings in the os-release file
-            if grep -q 'Amazon Linux 2' /etc/os-release; then
-                AMZN_VERS="amazon2"
-            elif grep -q 'Amazon Linux 2023' /etc/os-release; then
+            if grep -q 'Amazon Linux 2023' /etc/os-release; then
                 AMZN_VERS="amazon2023"
+            elif grep -q 'Amazon Linux 2' /etc/os-release; then
+                AMZN_VERS="amazon2"
             else
                 log error "Unknown Amazon Linux version"
             fi
