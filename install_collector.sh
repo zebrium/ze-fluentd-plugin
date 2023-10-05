@@ -329,7 +329,6 @@ function main() {
     elif [ "$DISTRIBUTION" == "Amazon" ]; then
         OS="Amazon"
     fi
-
     # Root user detection
     if [ $(echo "$UID") = "0" -o "$SUDO_DISABLED" = "1" ]; then
         log info "SUDO_DISABLED is set to 1, must be running as the root user"
@@ -399,9 +398,25 @@ function main() {
     elif [ $OS = "Amazon" ]; then
         DEFAULTS_DIR=/etc/sysconfig
         TD_AGENT_INSTALLED=$(yum list installed fluentd > /dev/null 2>&1 || echo "no")
-        AMZN_VERS=`uname -r | egrep -o  'amzn[[:digit:]]+' | sed 's/amzn//'`
+        # OLD CHECK: AMZN_VERS=`uname -r | egrep -o  'amzn[[:digit:]]+' | sed 's/amzn//'`
+
+        # NEW CHECK: Check if /etc/os-release file exists
+        if [ -f /etc/os-release ]; then
+            # Use grep to search for specific strings in the os-release file
+            if grep -q 'Amazon Linux 2' /etc/os-release; then
+                AMZN_VERS="amazon2"
+            elif grep -q 'Amazon Linux 2023' /etc/os-release; then
+                AMZN_VERS="amazon2023"
+            else
+                log error "Unknown Amazon Linux version"
+            fi
+        else
+            log error "The /etc/os-release file does not exist. It should if this is an Amazon Linux box, so not sure how we got here."
+        fi
+
         if [ "$TD_AGENT_INSTALLED" == "no" ]; then
-            download_and_run_installer https://toolbelt.treasuredata.com/sh/install-amazon${AMZN_VERS}-fluent-package5.sh
+            echo "download_and_run_installer https://toolbelt.treasuredata.com/sh/install-${AMZN_VERS}-fluent-package5.sh"
+            download_and_run_installer https://toolbelt.treasuredata.com/sh/install-${AMZN_VERS}-fluent-package5.sh
         fi
     # ---------------------
     # Debian/Ubuntu Install Section
