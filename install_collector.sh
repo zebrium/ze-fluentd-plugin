@@ -47,18 +47,18 @@ and we'll do our very best to help you solve your problem.\n\033[0m\n"
 }
 
 function update_td_agent_service_file() {
-    if ! grep -q 'ExecStartPre=' /lib/systemd/system/td-agent.service; then
-        log info "Add ExecStartPre script for td-agent service"
-        $SUDO_CMD sed -i '/^ExecStart=.*/i ExecStartPre=/opt/td-agent/bin/ruby /opt/zebrium/bin/update_fluentd_cfg.rb' /lib/systemd/system/td-agent.service
+    if ! grep -q 'ExecStartPre=' /lib/systemd/system/fluentd.service; then
+        log info "Add ExecStartPre script for fluentd service"
+        $SUDO_CMD sed -i '/^ExecStart=.*/i ExecStartPre=/opt/fluent/bin/ruby /opt/zebrium/bin/update_fluentd_cfg.rb' /lib/systemd/system/fluentd.service
     fi
-    if grep -q 'Environment=LD_PRELOAD=/opt/td-agent/lib/libjemalloc.so' /lib/systemd/system/td-agent.service; then
+    if grep -q 'Environment=LD_PRELOAD=/opt/fluent/lib/libjemalloc.so' /lib/systemd/system/fluentd.service; then
         log info "Disabling Malloc as a temp solution to memory leak crash"
-        $SUDO_CMD sed -i 's/^Environment=LD_PRELOAD=\/opt\/td-agent\/lib\/libjemalloc.so/#Environment=LD_PRELOAD=\/opt\/td-agent\/lib\/libjemalloc.so/' /lib/systemd/system/td-agent.service
+        $SUDO_CMD sed -i 's/^Environment=LD_PRELOAD=\/opt\/fluent\/lib\/libjemalloc.so/#Environment=LD_PRELOAD=\/opt\/fluent\/lib\/libjemalloc.so/' /lib/systemd/system/fluentd.service
     fi
 }
 
 function create_config() {
-    local MAIN_CONF_FILE=$TEMP_DIR/td-agent.conf
+    local MAIN_CONF_FILE=$TEMP_DIR/fluentd.conf
     local USER_CONF_FILE=$TEMP_DIR/user.conf
     local SYSTEMD_CONF_FILE=$TEMP_DIR/systemd.conf
     local CONTAINERS_CONF_FILE=$TEMP_DIR/containers.conf
@@ -74,7 +74,7 @@ function create_config() {
   path "$JOURNAL_DIR"
   <storage>
     @type local
-    path "/var/log/td-agent/fluentd-journald-cursor.json"
+    path "/var/log/fluent/fluentd-journald-cursor.json"
   </storage>
   tag journal
   read_from_head true
@@ -107,7 +107,7 @@ EOF
   path "$ZE_LOG_PATHS"
   format none
   path_key tailed_path
-  pos_file /var/log/td-agent/sys_logs.pos
+  pos_file /var/log/fluent/sys_logs.pos
   tag node.logs.*
   read_from_head true
 </source>
@@ -124,7 +124,7 @@ $SYSTEMD_INCLUDE
   ze_host_tags "$ZE_HOST_TAGS"
   <buffer tag>
     @type file
-    path /var/log/td-agent/buffer/out_zebrium.*.buffer
+    path /var/log/fluent/buffer/out_zebrium.*.buffer
     chunk_limit_size "1MB"
     chunk_limit_records "4096"
     flush_mode "interval"
@@ -140,7 +140,7 @@ EOF
   @type tail
   path "$ZE_USER_LOG_PATHS"
   path_key tailed_path
-  pos_file /var/log/td-agent/user_logs.pos
+  pos_file /var/log/fluent/user_logs.pos
   <parse>
     @type none
   </parse>
@@ -153,7 +153,7 @@ EOF
   @type tail
   path "/var/log/zebrium/container_logs/*.log"
   path_key tailed_path
-  pos_file /var/log/td-agent/containers_logs.pos
+  pos_file /var/log/fluent/containers_logs.pos
   read_from_head true
   tag containers.*
   format json
@@ -162,18 +162,18 @@ EOF
 </source>
 EOF
 
-    $SUDO_CMD mkdir -p /etc/td-agent
-    $SUDO_CMD cp -f $MAIN_CONF_FILE /etc/td-agent/td-agent.conf
-    $SUDO_CMD mkdir -p /etc/td-agent/conf.d
-    $SUDO_CMD cp -f $USER_CONF_FILE /etc/td-agent/conf.d
-    $SUDO_CMD cp -f $CONTAINERS_CONF_FILE /etc/td-agent/conf.d
+    $SUDO_CMD mkdir -p /etc/fluent
+    $SUDO_CMD cp -f $MAIN_CONF_FILE /etc/fluent/fluentd.conf
+    $SUDO_CMD mkdir -p /etc/fluent/conf.d
+    $SUDO_CMD cp -f $USER_CONF_FILE /etc/fluent/conf.d
+    $SUDO_CMD cp -f $CONTAINERS_CONF_FILE /etc/fluentconf.d
     if [ -n "$SYSTEMD_INCLUDE" ]; then
-        $SUDO_CMD cp -f $SYSTEMD_CONF_FILE /etc/td-agent/conf.d
+        $SUDO_CMD cp -f $SYSTEMD_CONF_FILE /etc/fluent/conf.d
     fi
 }
 
 function is_log_collector_installed() {
-    egrep -q '@type[[:space:]]+zebrium' /etc/td-agent/td-agent.conf 2>/dev/null
+    egrep -q '@type[[:space:]]+zebrium' /etc/fluent/fluentd.conf 2>/dev/null
 }
 
 function has_systemd() {
@@ -181,7 +181,7 @@ function has_systemd() {
 }
 
 function is_td_agent_service_installed() {
-    has_systemd && systemctl -a | grep -q td-agent
+    has_systemd && systemctl -a | grep -q fluentd
 }
 
 function do_uninstall() {
@@ -189,18 +189,18 @@ function do_uninstall() {
     if has_systemd; then
         $SUDO_CMD systemctl stop zebrium-container-mon
         $SUDO_CMD systemctl disable zebrium-container-mon
-        $SUDO_CMD systemctl stop td-agent
+        $SUDO_CMD systemctl stop fluentd
     else
-        $SUDO_CMD /etc/init.d/td-agent stop
+        $SUDO_CMD /etc/init.d/fluentd stop
     fi
     log info "Removing packages"
     if [ "$OS" = "RedHat" -o "$OS" = "Amazon" ]; then
-        $SUDO_CMD yum remove -y td-agent
+        $SUDO_CMD yum remove -y fluentd
     elif [ "$OS" = "Debian" ]; then
-        $SUDO_CMD apt-get -y remove td-agent
+        $SUDO_CMD apt-get -y remove fluentd
     fi
     $SUDO_CMD rm -rf /etc/zebrium /opt/zebrium
-    $SUDO_CMD rm -rf /etc/zebrium /opt/zebrium /etc/td-agent
+    $SUDO_CMD rm -rf /etc/zebrium /opt/zebrium /etc/fluentd
     log info "Removed Zebrium log collector"
 }
 
@@ -329,7 +329,6 @@ function main() {
     elif [ "$DISTRIBUTION" == "Amazon" ]; then
         OS="Amazon"
     fi
-
     # Root user detection
     if [ $(echo "$UID") = "0" -o "$SUDO_DISABLED" = "1" ]; then
         log info "SUDO_DISABLED is set to 1, must be running as the root user"
@@ -359,6 +358,10 @@ function main() {
     fi
 
     # Install the Fluentd, plugin and their depedencies
+
+    # ---------------------
+    # RedHat Install Section
+    # ---------------------
     if [ $OS = "RedHat" ]; then
         DEFAULTS_DIR=/etc/sysconfig
         MAJOR_VERS=""
@@ -376,10 +379,10 @@ function main() {
         elif (($MAJOR_VERS >20)); then
             MAJOR_VERS=7
         fi
-        TD_AGENT_INSTALLED=$(yum list installed td-agent > /dev/null 2>&1 || echo "no")
+        TD_AGENT_INSTALLED=$(yum list installed fluentd > /dev/null 2>&1 || echo "no")
         if [ "$TD_AGENT_INSTALLED" == "no" ]; then
             # treasuredata releases are '7', '8' etc but releasever added by installed may not match
-            SH_FILE=install-redhat-td-agent4.sh
+            SH_FILE=install-redhat-fluent-package5.sh
             download_installer https://toolbelt.treasuredata.com/sh/$SH_FILE
             MAJOR_VERS=`echo $MAJOR_VERS | sed 's/\..*//'`
             sed -i -e "s/\\\\\$releasever/$MAJOR_VERS/" $SH_FILE
@@ -389,13 +392,35 @@ function main() {
                 $SUDO_CMD bash $SH_FILE && rm $SH_FILE
             fi
         fi
+    # ---------------------
+    # Amazon Linux Install Section
+    # ---------------------
     elif [ $OS = "Amazon" ]; then
         DEFAULTS_DIR=/etc/sysconfig
-        TD_AGENT_INSTALLED=$(yum list installed td-agent > /dev/null 2>&1 || echo "no")
-        AMZN_VERS=`uname -r | egrep -o  'amzn[[:digit:]]+' | sed 's/amzn//'`
-        if [ "$TD_AGENT_INSTALLED" == "no" ]; then
-            download_and_run_installer https://toolbelt.treasuredata.com/sh/install-amazon${AMZN_VERS}-td-agent4.sh
+        TD_AGENT_INSTALLED=$(yum list installed fluentd > /dev/null 2>&1 || echo "no")
+        # OLD CHECK: AMZN_VERS=`uname -r | egrep -o  'amzn[[:digit:]]+' | sed 's/amzn//'`
+
+        # NEW CHECK: Check if /etc/os-release file exists
+        if [ -f /etc/os-release ]; then
+            # Use grep to search for specific strings in the os-release file
+            if grep -q 'Amazon Linux 2023' /etc/os-release; then
+                AMZN_VERS="amazon2023"
+            elif grep -q 'Amazon Linux 2' /etc/os-release; then
+                AMZN_VERS="amazon2"
+            else
+                log error "Unknown Amazon Linux version"
+            fi
+        else
+            log error "The /etc/os-release file does not exist. It should if this is an Amazon Linux box, so not sure how we got here."
         fi
+
+        if [ "$TD_AGENT_INSTALLED" == "no" ]; then
+            echo "download_and_run_installer https://toolbelt.treasuredata.com/sh/install-${AMZN_VERS}-fluent-package5.sh"
+            download_and_run_installer https://toolbelt.treasuredata.com/sh/install-${AMZN_VERS}-fluent-package5.sh
+        fi
+    # ---------------------
+    # Debian/Ubuntu Install Section
+    # ---------------------
     elif [ $OS = "Debian" ]; then
         DEFAULTS_DIR=/etc/default
         IS_UBUNTU=`cat /etc/os-release | grep -i Ubuntu | wc -l`
@@ -426,25 +451,25 @@ function main() {
         fi
         log info "Flavor of package: ${FLAVOR_STR} and code name: ${CODE_NAME} detected"
         
-        log info "Installing log collector from https://toolbelt.treasuredata.com/sh/install-${FLAVOR_STR}-${CODE_NAME}-td-agent4.sh" 
-        download_and_run_installer https://toolbelt.treasuredata.com/sh/install-${FLAVOR_STR}-${CODE_NAME}-td-agent4.sh
+        log info "Installing log collector from https://toolbelt.treasuredata.com/sh/install-${FLAVOR_STR}-${CODE_NAME}-fluent-package5.sh" 
+        download_and_run_installer https://toolbelt.treasuredata.com/sh/install-${FLAVOR_STR}-${CODE_NAME}-fluent-package5.sh
     else
         err_exit info "Your OS or distribution is not supported by this install script."
     fi
 
-    if ! command -v td-agent &> /dev/null; then
-        err_exit "td-agent installation failed"
+    if ! command -v fluentd &> /dev/null; then
+        err_exit "Fluentd installation failed"
     fi
 
     log info "Installing fluent-plugin-systemd"
-    $SUDO_CMD td-agent-gem install fluent-plugin-systemd
+    $SUDO_CMD fluent-gem install fluent-plugin-systemd
     log info "Installing docker-api"
-    $SUDO_CMD td-agent-gem install docker-api
+    $SUDO_CMD fluent-gem install docker-api
     log info "Uninstalling fluent-plugin-zebrium_output"
-    $SUDO_CMD td-agent-gem uninstall fluent-plugin-zebrium_output
+    $SUDO_CMD fluent-gem uninstall fluent-plugin-zebrium_output
 
     log info "Installing fluent-plugin-zebrium_output"
-    $SUDO_CMD td-agent-gem install fluent-plugin-systemd fluent-plugin-zebrium_output
+    $SUDO_CMD fluent-gem install fluent-plugin-systemd fluent-plugin-zebrium_output
 
     log info "Downloading zebrium-fluentd package"
     $DL_CMD https://github.com/zebrium/ze-fluentd-plugin/releases/latest/download/zebrium-fluentd.tar.gz
@@ -454,18 +479,18 @@ function main() {
     $SUDO_CMD rm zebrium-fluentd.tar.gz
 
 
-    TD_DEFAULT_FILE=$DEFAULTS_DIR/td-agent
+    TD_DEFAULT_FILE=$DEFAULTS_DIR/fluent
     if [ ! -e $TD_DEFAULT_FILE ]; then
         $SUDO_CMD sh -c "echo TD_AGENT_USER=root >> $TD_DEFAULT_FILE"
         $SUDO_CMD sh -c "echo TD_AGENT_GROUP=root >> $TD_DEFAULT_FILE"
     fi
-    if [ -f /var/log/td-agent/td-agent.log ]; then
-        $SUDO_CMD chown root:root /var/log/td-agent/td-agent.log
+    if [ -f /var/log/fluent/fluentd.log ]; then
+        $SUDO_CMD chown root:root /var/log/fluent/fluentd.log
     fi
 
     if has_systemd; then
-        $SUDO_CMD mkdir -p /etc/systemd/system/td-agent.service.d
-        $SUDO_CMD sh -c '/bin/echo -e "[Service]\nUser=root\nGroup=root\n" > /etc/systemd/system/td-agent.service.d/override.conf'
+        $SUDO_CMD mkdir -p /etc/systemd/system/fluentd.service.d
+        $SUDO_CMD sh -c '/bin/echo -e "[Service]\nUser=root\nGroup=root\n" > /etc/systemd/system/fluentd.service.d/override.conf'
         update_td_agent_service_file
 
         $SUDO_CMD cp -f /opt/zebrium/etc/zebrium-container-mon.service /etc/systemd/system/
@@ -476,12 +501,12 @@ function main() {
     fi
 
     # Set the configuration
-    if egrep -q '@type[[:space:]]+zebrium' /etc/td-agent/td-agent.conf 2>/dev/null && [ $OVERWRITE_CONFIG -eq 0 ]; then
-        log info "Keeping old /etc/td-agent/td-agent.conf configuration file"
+    if egrep -q '@type[[:space:]]+zebrium' /etc/fluent/fluentd.conf 2>/dev/null && [ $OVERWRITE_CONFIG -eq 0 ]; then
+        log info "Keeping old /etc/fluent/fluentd.conf configuration file"
     else
-        if [ -e /etc/td-agent/td-agent.conf ]; then
-            log info "Saving current /etc/td-agent/td-agent.conf to /etc/td-agent/td-agent.backup"
-            $SUDO_CMD mv -f /etc/td-agent/td-agent.conf /etc/td-agent/td-agent.backup
+        if [ -e /etc/fluent/fluentd.conf ]; then
+            log info "Saving current /etc/fluent/fluentd.conf to /etc/fluent/fluentd.backup"
+            $SUDO_CMD mv -f /etc/fluent/fluentd.conf /etc/fluent/fluentd.backup
         fi
         log info "Creating new fluentd config and adding API server URL and API key"
         if [ -e /var/log/journal ]; then
@@ -494,11 +519,11 @@ function main() {
         create_config
     fi
 
-    restart_cmd="$SUDO_CMD /etc/init.d/td-agent restart"
+    restart_cmd="$SUDO_CMD /etc/init.d/fluentd restart"
     if has_systemd; then
-        restart_cmd="$SUDO_CMD systemctl restart td-agent"
+        restart_cmd="$SUDO_CMD systemctl restart fluentd"
         if ! is_td_agent_service_installed; then
-            $SUDO_CMD systemctl enable td-agent
+            $SUDO_CMD systemctl enable fluentd
         fi
     fi
 
@@ -510,7 +535,7 @@ Zebrium Log Collector is not started.
 
 To start Log Collector manually, run:
     sudo systemctl start zebrium-container-mon
-    sudo systemctl start td-agent
+    sudo systemctl start fluentd
 
 \033[0m"
 
@@ -520,7 +545,7 @@ To start Log Collector manually, run:
 Zebrium Log Collector is not started.
 
 To start Log Collector manually, run:
-    sudo /etc/init.d/td-agent start
+    sudo /etc/init.d/fluentd start
 
 \033[0m"
         fi
@@ -532,7 +557,7 @@ To start Log Collector manually, run:
     fi
 
     log info "Starting Zebrium log collector..."
-    # We have seen systemd returns error on first start of td-agent, so we ignore error and just check
+    # We have seen systemd returns error on first start of fluentd, so we ignore error and just check
     # status
     set +e
     trap - ERR
@@ -542,7 +567,7 @@ To start Log Collector manually, run:
     if is_td_agent_service_installed; then
         while : ; do
             log info "Waiting for log collector to come up ..."
-            systemctl status td-agent > /dev/null && break
+            systemctl status fluentd > /dev/null && break
             sleep 5
         done
         printf "\033[32m
@@ -552,19 +577,19 @@ Zebrium Log Collector is running.
 If you ever want to stop the Log Collector, run:
 
     sudo systemctl stop zebrium-container-mon
-    sudo systemctl stop td-agent
+    sudo systemctl stop fluentd
 
 And to run it again run:
 
     sudo systemctl start zebrium-container-mon
-    sudo systemctl start td-agent
+    sudo systemctl start fluentd
 
 \033[0m"
 
     else
         while : ; do
             log info "Waiting for log collector to come up ..."
-            $SUDO_CMD /etc/init.d/td-agent status && break
+            $SUDO_CMD /etc/init.d/fluentd status && break
             sleep 5
         done
         printf "\033[32m
@@ -573,11 +598,11 @@ Zebrium Log Collector is running.
 
 If you ever want to stop the Log Collector, run:
 
-    sudo /etc/init.d/td-agent stop
+    sudo /etc/init.d/fluentd stop
 
 And to run it again run:
 
-    sudo /etc/init.d/td-agent start
+    sudo /etc/init.d/fluentd start
 
 \033[0m"
     fi
