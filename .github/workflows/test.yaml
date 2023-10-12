@@ -1,8 +1,9 @@
 name: test
 
 on:   
+  push:
   pull_request:
-    
+  
 permissions: 
   contents: read
 
@@ -14,12 +15,12 @@ jobs:
         os:
           - ubuntu:jammy
           - ubuntu:focal
-          - ubuntu:bionic
           - debian:bullseye
-          - debian:buster
           - oraclelinux:9
           - oraclelinux:8
           - oraclelinux:7
+          - amazonlinux:2
+          - amazonlinux:2023
     runs-on: ubuntu-latest
     container: 
       image: ${{ matrix.os }}
@@ -39,7 +40,7 @@ jobs:
           apt-get -qq update
           apt-get -qq install -y apt-transport-https
       - name: Install Dependencies RPM
-        if: ${{ contains( matrix.os, 'oracle') || contains(matrix.os, 'redhat' ) }}
+        if: ${{ contains( matrix.os, 'oracle') || contains(matrix.os, 'redhat' ) || contains(matrix.os, 'amazon' ) }}
         run: |
           yum -q update -y
           yum -q install -y git sudo
