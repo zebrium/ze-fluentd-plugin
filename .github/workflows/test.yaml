@@ -49,6 +49,6 @@ jobs:
           yum -q update -y
           yum -q install -y git sudo tar
           
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: git config --system --add safe.directory $GITHUB_WORKSPACE
       - run: ./install_collector.sh 
