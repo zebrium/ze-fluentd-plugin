@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Install Tar
         run: |
-          apt-get -qq update && apt-get -qq install -y tar
+          sudo apt-get -qq update && sudo apt-get -qq install -y tar
       - name: Build temp Directory
         run: |
           mkdir -p zebrium/bin
