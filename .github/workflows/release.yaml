@@ -13,7 +13,7 @@ jobs:
   package-and-publish: 
     runs-on: ubuntu-latest
     steps: 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install Tar
         run: |
           sudo apt-get -qq update && sudo apt-get -qq install -y tar
