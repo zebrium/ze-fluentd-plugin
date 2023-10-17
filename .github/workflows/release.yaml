@@ -29,7 +29,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with: 
           files: |
-            $TAR_FILE_NAME
+            ${{ env.TAR_FILE_NAME }}
             install_collector.sh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
