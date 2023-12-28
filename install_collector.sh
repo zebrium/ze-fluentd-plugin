@@ -424,18 +424,10 @@ function main() {
     elif [ $OS = "Debian" ]; then
         DEFAULTS_DIR=/etc/default
         IS_UBUNTU=`cat /etc/os-release | grep -i Ubuntu | wc -l`
-        if which lsb_release > /dev/null 2>&1; then
-            CODE_NAME=`lsb_release -c | awk '{ print $2 }'`
-        else
-            RELEASE_VERS=`head -1 /etc/issue | awk '{ print $3 }'`
-            case "$RELEASE_VERS" in
-                11)
-                    CODE_NAME="bullseye" ;;
-                10) 
-                    CODE_NAME="buster";;
-                *) 
-                    err_exit "Your OS or distribution is not supported by this install script." ;;
-            esac
+        CODE_NAME=$(grep VERSION_CODENAME /etc/os-release | cut -d'=' -f2)
+        if [ -z "$CODE_NAME" ]; then
+            # Fallback for older versions or if VERSION_CODENAME is missing
+            err_exit "Your OS or distribution is not supported by this install script."
         fi
         if [ "$CODE_NAME" == "tricia" -o "$CODE_NAME" == "tina" -o "$CODE_NAME" == "tessa" -o "$CODE_NAME" == "tara" ]; then
             CODE_NAME="bionic"
@@ -566,7 +558,7 @@ To start Log Collector manually, run:
 
     if is_td_agent_service_installed; then
         while : ; do
-            log info "Waiting for log collector to come up ..."
+            log info "Waiting for log collector to come up (checking systemctl status fluentd) ..."
             systemctl status fluentd > /dev/null && break
             sleep 5
         done
@@ -588,7 +580,7 @@ And to run it again run:
 
     else
         while : ; do
-            log info "Waiting for log collector to come up ..."
+            log info "Waiting for log collector to come up (checking /etc/init.d/fluentd status) ..."
             $SUDO_CMD /etc/init.d/fluentd status && break
             sleep 5
         done
