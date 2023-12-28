@@ -63,9 +63,9 @@ Please note setting `OVERWRITE_CONFIG` to 1 will cause `/etc/td-agent/td-agent.c
 curl https://raw.githubusercontent.com/zebrium/ze-fluentd-plugin/master/install_collector.sh | ZE_OP=uninstall /bin/bash
 ```
 
-### Installing on Hosts with Existing td-agent Configuration
+### Installing on Hosts with Existing fluent Configuration
 
-It is possible to add Zebrium output plugin on a host with existing td-agent configuration without running Zebrium log collector installer.  Zebrium output plugin is provided through RubyGems [here](https://rubygems.org/gems/fluent-plugin-zebrium_output)
+It is possible to add Zebrium output plugin on a host with existing fluent configuration without running Zebrium log collector installer.  Zebrium output plugin is provided through RubyGems [here](https://rubygems.org/gems/fluent-plugin-zebrium_output)
 
 1. Run the following command:
 
