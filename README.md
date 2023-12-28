@@ -73,7 +73,7 @@ It is possible to add Zebrium output plugin on a host with existing td-agent con
    sudo td-agent-gem install fluent-plugin-zebrium_output
    ```
 
-3. Add Zebrium output configuration to `/etc/td-agent/td-agent.conf`. Below is an example configuration which duplicates log messages and sends one copy to Zebrium.
+3. Add Zebrium output configuration to `/etc/fluent/fluent.conf`. Below is an example configuration which duplicates log messages and sends one copy to Zebrium.
 
    ``` bash
    <match **>
