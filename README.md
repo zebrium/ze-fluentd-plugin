@@ -1,7 +1,7 @@
 # LINUX COLLECTOR DETAILS
 
 Zebrium's linux log collector sends the logs you collect with [fluentd](https://www.fluentd.org/) on linux to Zebrium for automated anomaly detection.
-Our github repository is located [here](https://github.com/zebrium/ze-fluentd-plugin).  Zebium's linux log collector leverages our [fluentd output plugin](https://github.com/zebrium/fluentd-output-zebrium) and is distributed leveraging td-agent version 4.  Because of this, we are limited to the installation platforms that are supported by the td-agent installation.  For more information, see the package [documentation](https://www.fluentd.org/download/td_agent).  Below are instructions on utilizing our installation script for installing and configuring td-agent alongside our plugins.
+Our github repository is located [here](https://github.com/zebrium/ze-fluentd-plugin).  Zebium's linux log collector leverages our [fluentd output plugin](https://github.com/zebrium/fluentd-output-zebrium) and is distributed leveraging fluent-package version 5.  Because of this, we are limited to the installation platforms that are supported by the fluent-package installation.  For more information, see the package [documentation](https://docs.fluentd.org/quickstart/fluent-package-v5-vs-td-agent).  Below are instructions on utilizing our installation script for installing and configuring fluent-package alongside our plugins.
 
 For instructions on deploying our fluentd collector for [docker](https://github.com/zebrium/fluentd-output-zebrium) environments, please see docker setup [here](https://docs.zebrium.com/docs/setup/docker)
 
@@ -55,7 +55,7 @@ The upgrade command is similar to the installation command:
 curl https://raw.githubusercontent.com/zebrium/ze-fluentd-plugin/master/install_collector.sh | ZE_LOG_COLLECTOR_URL=<ZAPI_URL> ZE_LOG_COLLECTOR_TOKEN=<AUTH_TOKEN> ZE_HOST_TAGS="ze_deployment_name=<deployment_name>" OVERWRITE_CONFIG=1 /bin/bash
 ```
 
-Please note setting `OVERWRITE_CONFIG` to 1 will cause `/etc/td-agent/td-agent.conf` to be upgraded to latest version.
+Please note setting `OVERWRITE_CONFIG` to 1 will cause `/etc/fluent/fluentd.conf` to be upgraded to latest version.
 
 ### Uninstalling
 
@@ -70,7 +70,7 @@ It is possible to add Zebrium output plugin on a host with existing fluent confi
 1. Run the following command:
 
    ``` bash
-   sudo td-agent-gem install fluent-plugin-zebrium_output
+   sudo fluent-gem install fluent-plugin-zebrium_output
    ```
 
 3. Add Zebrium output configuration to `/etc/fluent/fluent.conf`. Below is an example configuration which duplicates log messages and sends one copy to Zebrium.
@@ -87,7 +87,7 @@ It is possible to add Zebrium output plugin on a host with existing fluent confi
        @log_level "info"
        <buffer tag>
          @type file
-         path "/var/td-agent/zebrium"
+         path "/var/fluent/zebrium"
          flush_mode "interval"
          flush_interval "60s"
        </buffer>
@@ -101,7 +101,7 @@ It is possible to add Zebrium output plugin on a host with existing fluent confi
 
 ### Configurations
 
-There are several configurations options for the log collector. The configuration file for td-agent is at `/etc/td-agent/td-agent.conf`.
+There are several configurations options for the log collector. The configuration file for fluent-package is at `/etc/fluent/fluentd.conf`.
 
 #### Parameters
 
@@ -120,9 +120,9 @@ The following parameters must be configured for your instance:
 
 ##### User Log Paths
 
-In some configurations, you may wish to create a dynamic configuration from a file to be loaded on the start of td-agent.  This can be accomplished by creating a log-file-map.conf json file as seen below.  This file will need to reside in the following location `/etc/td-agent/log-file-map.conf`. During log collector service startup, if `/etc/td-agent/log-file-map.conf` exists, log collector service script writes log paths defined in `/etc/td-agent/log-file-map.conf` to `/etc/td-agent/conf.d/user.conf`.
+In some configurations, you may wish to create a dynamic configuration from a file to be loaded on the start of fluent-package.  This can be accomplished by creating a log-file-map.conf json file as seen below.  This file will need to reside in the following location `/etc/fluent/log-file-map.conf`. During log collector service startup, if `/etc/fluent/log-file-map.conf` exists, log collector service script writes log paths defined in `/etc/fluent/log-file-map.conf` to `/etc/fluent/conf.d/user.conf`.
 
-Please note any user log paths configured at installation time via ZE_USER_LOG_PATHS must be added to `/etc/td-agent/log-file-map.conf` to avoid being overwritten.
+Please note any user log paths configured at installation time via ZE_USER_LOG_PATHS must be added to `/etc/fluent/log-file-map.conf` to avoid being overwritten.
 
 ``` json
 {
@@ -147,13 +147,13 @@ Please note any user log paths configured at installation time via ZE_USER_LOG_P
 
 If you wish to exclude certain sensitive or noisy events from being sent to Zebrium, you can filter them at the source collection point by doing the following:
 
-1. Add the following in /etc/td-agent/td-agent.conf after other "@include":
+1. Add the following in /etc/fluent/fluentd.conf after other "@include":
 
    ``` configuration
    @include conf.d/log_msg_filters.conf
    ```
 
-2. Create a config file /etc/td-agent/conf.d/log_msg_filters.conf containing:
+2. Create a config file /etc/fluent/conf.d/log_msg_filters.conf containing:
 
    ``` configuration
    <filter TAG_FOR_LOG_FILE>
@@ -165,7 +165,7 @@ If you wish to exclude certain sensitive or noisy events from being sent to Zebr
    </filter>
    ```
 
-3. Restart td-agent: sudo systemctl restart td-agent
+3. Restart fluentd: sudo systemctl restart fluentd
 
 ###### Example
 
@@ -211,27 +211,27 @@ Log path mapping is configured using a JSON file, with format:
 ```
 ##### Configuring Multiple Zebrium Service Groups Within a Single Collector
 
-It is possible to use a single td-agent to send log files to multiple Zebrium service groups. Knowlege about advanced fluentd configuration is required. It is recommended to review the official documentation at https://docs.fluentd.org/configuration/config-file 
+It is possible to use a single fluentd installation to send log files to multiple Zebrium service groups. Knowlege about advanced fluentd configuration is required. It is recommended to review the official documentation at https://docs.fluentd.org/configuration/config-file 
 
 The following are required:
 - each service group needs to have its own source block and match block defenitions
 - in each source block, the path should be as specific as possible
 - paths in source blocks should not overlap
-- each source block needs a unique pos_file (td-agent will create the file if it does not exist)
+- each source block needs a unique pos_file (fluentd will create the file if it does not exist)
 - each source block should include a unique tag to specify which match block/service group should pick up the log events
 - each match block should match on the tag in its corresponding source block
 - ze_log_collector_url, ze_log_collector_token, and ze_log_collector_type will probably be the same in all match blocks
 - ze_host_tags specifies the service group name with "ze_deployment_name=<service group name>"
 - each match block requires a unique buffer path, which will be created if the specified path does not exist
 
-Here's an example of how this could be configured in /etc/td-agent/td-agent.conf:
+Here's an example of how this could be configured in /etc/fluent/fluentd.conf:
 ```
 <source>
   @type tail
   path "/var/log/auth.log"
   format none
   path_key tailed_path
-  pos_file /var/log/td-agent/position_file_1.pos
+  pos_file /var/log/fluent/position_file_1.pos
   tag seamus1
   read_from_head true
 </source>
@@ -241,7 +241,7 @@ Here's an example of how this could be configured in /etc/td-agent/td-agent.conf
   path "/var/log/syslog"
   format none
   path_key tailed_path
-  pos_file /var/log/td-agent/position_file_2.pos
+  pos_file /var/log/fluent/position_file_2.pos
   tag seamus2
   read_from_head true
 </source>
@@ -258,7 +258,7 @@ Here's an example of how this could be configured in /etc/td-agent/td-agent.conf
   ze_host_tags "ze_deployment_name=seamusfirstservicegroup"
   <buffer tag>
     @type file
-    path /var/log/td-agent/buffer1/out_zebrium.*.buffer
+    path /var/log/fluent/buffer1/out_zebrium.*.buffer
     chunk_limit_size "1MB"
     chunk_limit_records "4096"
     flush_mode "interval"
@@ -274,7 +274,7 @@ Here's an example of how this could be configured in /etc/td-agent/td-agent.conf
   ze_host_tags "ze_deployment_name=seamussecondservicegroup"
   <buffer tag>
     @type file
-    path /var/log/td-agent/buffer2/out_zebrium.*.buffer
+    path /var/log/fluent/buffer2/out_zebrium.*.buffer
     chunk_limit_size "1MB"
     chunk_limit_records "4096"
     flush_mode "interval"
@@ -298,7 +298,7 @@ If the agent environment requires a non-transparent proxy server to be configure
 
 ###### Setting proxy server in a systemd environment
 
-If the agent service is run from systemd and a proxy server is in use, the service needs to have the appropriate proxy configuration added to systemd. (This may not be needed if your system is already configured so that all systemd services globally use a proxy.) To do this, after the installation is performed edit the file /etc/systemd/service/td-agent.service.d/override.conf to add environment configuration lines for the proxy server, for example:
+If the agent service is run from systemd and a proxy server is in use, the service needs to have the appropriate proxy configuration added to systemd. (This may not be needed if your system is already configured so that all systemd services globally use a proxy.) To do this, after the installation is performed edit the file /etc/systemd/system/fluentd.service.d/override.conf to add environment configuration lines for the proxy server, for example:
 
 ``` bash
 Environment=http_proxy=myproxy.example.com:8080
@@ -309,7 +309,7 @@ After this is done the systemd daemon should be reloaded, and then the service s
 ``` bash
 sudo systemctl daemon-reload
 
-sudo systemctl restart td-agent
+sudo systemctl restart fluentd
 ```
 
 ## Usage
@@ -319,7 +319,7 @@ sudo systemctl restart td-agent
 Fluentd agent can be started or stopped with the command:
 
 ``` bash
-sudo systemctl <start | stop> td-agent
+sudo systemctl <start | stop> fluentd
 ```
 
 ## Testing your installation
@@ -332,7 +332,7 @@ In the event that Zebrium requires the collector logs for troubleshooting, logs 
 
 1. Collector installation log:  `/tmp/zlog-collector-install.log.*`
 
-2. Collector runtime log: `/var/log/td-agent/td-agent.log`
+2. Collector runtime log: `/var/log/fluent/fluentd.log`
 
 In case of an HTTP connection error, please check the spelling of the Zebrium host URL. Also check that any network proxy servers are configured appropriately.
 
@@ -341,5 +341,5 @@ and files to more efficiently resolve your issue.
 
 1. Description of the problem and relevant environment specific information
 2. Collector installation log:  `/tmp/zlog-collector-install.log.*`
-3. Collector runtime log: `/var/log/td-agent/td-agent.log`
-4. Collector configurations: `/etc/td-agent/td-agent.conf`, `/etc/td-agent/conf.d/*.conf`
+3. Collector runtime log: `/var/log/fluent/fluentd.log`
+4. Collector configurations: `/etc/fluent/fluentd.conf`, `/etc/fluent/conf.d/*.conf`
