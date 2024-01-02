@@ -1,4 +1,4 @@
-#!/opt/td-agent/embedded/bin/ruby
+#!/opt/fluent/bin/ruby
 # (C) Sciencelogic, Inc. 2023
 require 'json'
 require 'logger'
@@ -6,9 +6,9 @@ require 'logger'
 log = Logger.new(STDOUT)
 log.level = Logger::INFO
 
-file_map_cfg_file = "/etc/td-agent/log-file-map.conf"
-old_file_map_cfg_file = "/etc/zebrium/log-file-map.cfg"
-user_fluentd_cfg_file = "/etc/td-agent/conf.d/user.conf"
+file_map_cfg_file = "/etc/fluent/log-file-map.conf"
+old_file_map_cfg_file = "/etc/td-agent/log-file-map.conf"
+user_fluentd_cfg_file = "/etc/fluent/conf.d/user.conf"
 
 if File.exist?(file_map_cfg_file) and File.exist?(old_file_map_cfg_file)
     log.error("Both " + file_map_cfg_file + " and " + old_file_map_cfg_file + " exist")
@@ -66,7 +66,7 @@ user_cfg = '<source>
   path "FILE_PATHS"
   exclude_path [EXCLUDE_PATHS]
   path_key tailed_path
-  pos_file /var/log/td-agent/user_logs.pos
+  pos_file /var/log/fluent/user_logs.pos
   tag node.logs.*
   read_from_head true
   <parse>
