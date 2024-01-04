@@ -16,7 +16,7 @@ jobs:
         # Extract the new version number
         NEW_VERSION=$(echo ${{ github.event.release.tag_name }})
         # Update the script with the new version
-        sed -i "s/VERSION=.*/VERSION=$NEW_VERSION/" ze-fluentd-plugin/install_collector.sh
+        sed -i "s/VERSION=.*/VERSION=$NEW_VERSION/" /home/runner/work/ze-fluentd-plugin/ze-fluentd-plugin/install_collector.sh
 
     - name: Commit and Push
       run: |
