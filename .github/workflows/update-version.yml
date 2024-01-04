@@ -1,10 +1,8 @@
 name: Update Version
 
-on:
-  push:
-    branches:
-      - 18_autoversioning
-
+on:   
+  pull_request:
+  
 jobs:
   update-version:
     runs-on: ubuntu-latest
