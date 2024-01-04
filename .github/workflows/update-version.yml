@@ -17,11 +17,12 @@ jobs:
         NEW_VERSION=$(echo ${{ github.event.release.tag_name }})
         # Update the script with the new version
         sed -i "s/VERSION=.*/VERSION=$NEW_VERSION/" /home/runner/work/ze-fluentd-plugin/ze-fluentd-plugin/install_collector.sh
+        echo "Set new version to $NEW_VERSION"
 
     - name: Commit and Push
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git commit -am "Update script version to $NEW_VERSION"
-        git push
+        git push origin HEAD:#18_autoversioning
 
