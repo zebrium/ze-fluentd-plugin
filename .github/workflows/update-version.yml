@@ -1,8 +1,9 @@
 name: Update Version
 
 on:
-  release:
-    types: [created]
+  push:
+    branches:
+      - 18_autoversioning
 
 jobs:
   update-version:
@@ -17,7 +18,6 @@ jobs:
         # Extract the new version number
         NEW_VERSION=$(echo ${{ github.event.release.tag_name }})
         # Update the script with the new version
-        # Assuming your script is a bash script and the version is stored in a variable
         sed -i "s/VERSION=.*/VERSION=$NEW_VERSION/" ze-fluentd-plugin/install_collector.sh
 
     - name: Commit and Push
