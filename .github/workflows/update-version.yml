@@ -1,0 +1,28 @@
+name: Update Version
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v2
+
+    - name: Update Script
+      run: |
+        # Extract the new version number
+        NEW_VERSION=$(echo ${{ github.event.release.tag_name }})
+        # Update the script with the new version
+        # Assuming your script is a bash script and the version is stored in a variable
+        sed -i "s/VERSION=.*/VERSION=$NEW_VERSION/" ze-fluentd-plugin/install_collector.sh
+
+    - name: Commit and Push
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git commit -am "Update script version to $NEW_VERSION"
+        git push
