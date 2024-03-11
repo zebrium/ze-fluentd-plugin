@@ -26,7 +26,7 @@ jobs:
           cp scripts/update_fluentd_cfg.rb zebrium/bin
           tar -zcvf $TAR_FILE_NAME zebrium
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with: 
           files: |
             ${{ env.TAR_FILE_NAME }}
